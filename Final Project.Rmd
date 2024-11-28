@@ -7,7 +7,9 @@ output: pdf_document
 
 List your group members, including their student numbers, here:
 
--   Justin Lee ()
+-   Justin Lee (169085217)
 -   Raiyan Junaid (169099497)
 -   Dylan Plut ()
 -   Seamus Chai ()
+
+# Libraries 
