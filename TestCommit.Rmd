@@ -1,0 +1,13 @@
+This is a test file for testing purposes with committing and stuff :OOO
+
+Random Data for graphs:
+```{r}
+library(palmerpenguins)
+peng <- na.omit(palmerpenguins::penguins)
+library(tidyverse)
+
+peng |>
+  ggplot(aes(x = bill_length_mm, y = flipper_length_mm, colour = species)) +
+  geom_point()
+#Did this work?
+```
