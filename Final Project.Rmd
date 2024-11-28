@@ -1,1 +1,13 @@
-This file is currently blank, but it will be formatted like A3-Pt2
+---
+title: "Optimal song properties for popularity"
+author: "Group 3"
+date: "December 4th, 2024"
+output: pdf_document
+---
+
+List your group members, including their student numbers, here:
+
+-   Justin Lee ()
+-   Raiyan Junaid (169099497)
+-   Dylan Plut ()
+-   Seamus Chai ()
