@@ -29,17 +29,26 @@ client_secret <- "21595e5404494df2b55150af90d3ab50"
 redirect_uri <- "http:localhost:1410/"
 
 oauth_endpoint <- oauth_endpoint(
-  
+  authorize = "https://accounts.spotify.com/authorize",
+  access = "https://accounts.spotify.com/api/token"
 )
 
 
 oauth_app <- oauth_app(
-  appname = app_nam,
+  appname = app_name,
   key = client_id,
   secret = client_secret,
   redirect_uri = redirect_uri
 )
   
+
+token <- oauth2.0_token(
+  oauth_endpoint,
+  oauth_app,
+  cache = FALSE,
+  use_oob = FALSE
+)
+
 #Sys.setenv(SPOTIFY_CLIENT_ID = 'f2dd1d921e0b4ee6bdfdb019981da2ce')
 #Sys.setenv(SPOTIFY_CLIENT_SECRET = '21595e5404494df2b55150af90d3ab50')
 
