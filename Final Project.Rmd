@@ -13,9 +13,13 @@ List your group members, including their student numbers, here:
 -   Seamus Chai ()
 
 # Libraries
-
 ```{r}
-
+library(spotifyr)
 ```
 
-# 
+```{r}
+Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxxxxxxxxxxxxxx')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxxxxxxxxxxxxxxx')
+
+access_token <- get_spotify_access_token()
+```
