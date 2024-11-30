@@ -15,12 +15,33 @@ List your group members, including their student numbers, here:
 # Libraries
 
 ```{r}
+library(tidyverse)
+library(tidymodels)
 library(spotifyr)
+library(httr)
+library(rstudioapi)
 ```
 
 ```{r}
-Sys.setenv(SPOTIFY_CLIENT_ID = 'f2dd1d921e0b4ee6bdfdb019981da2ce')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = '21595e5404494df2b55150af90d3ab50')
+app_name <- "Data 100 final project"
+client_id <- "f2dd1d921e0b4ee6bdfdb019981da2ce"
+client_secret <- "21595e5404494df2b55150af90d3ab50"
+redirect_uri <- "http:localhost:1410/"
 
-access_token <- get_spotify_access_token()
+oauth_endpoint <- oauth_endpoint(
+  
+)
+
+
+oauth_app <- oauth_app(
+  appname = app_nam,
+  key = client_id,
+  secret = client_secret,
+  redirect_uri = redirect_uri
+)
+  
+#Sys.setenv(SPOTIFY_CLIENT_ID = 'f2dd1d921e0b4ee6bdfdb019981da2ce')
+#Sys.setenv(SPOTIFY_CLIENT_SECRET = '21595e5404494df2b55150af90d3ab50')
+
+#access_token <- get_spotify_access_token()
 ```
