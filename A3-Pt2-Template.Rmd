@@ -7,10 +7,14 @@ output: pdf_document
 
 List your group members, including their student numbers, here:
 
--   John K. Samson (\#########)
--   John Darnielle (\#########)
--   Craig Finn (\#########)
--   Joel Plaskett (\########)
+-   Justin Lee (169085217)
+
+-   Dylan Plut ()
+
+-    (\#########)
+
+    Seamus Chai (\########)
+
 -   Ezra Furman (\#########)
 
 You **must** be in a group in MyLS in order to see the DropBox used for submission. Even if you're alone, you must join a group by yourself.
