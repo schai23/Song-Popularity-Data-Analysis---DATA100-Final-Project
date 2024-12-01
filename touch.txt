@@ -1,6 +1,10 @@
+This txt file was used to test Git commits. It is now archived. 
+
+------------------------------------------------------------
 DYLAN PLUT - HI RAIYAN
 Justin - JustinLee
-SEAMUS - I DONT LIKE YOU DYLAN >:(
-SEAMUS (NOT RAIYAN) - I LOVE YOU DYLAN, THAT WAS RAIYAN :) <3
+SEAMUS - 
+- DYLAN 
 
-TESTING!!!!! - DYLAN 
+final test
+------------------------------------------------------------
