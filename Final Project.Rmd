@@ -17,25 +17,10 @@ List your group members, including their student numbers, here:
 ```{r}
 library(tidyverse)
 library(tidymodels)
-library(httr)
-library(rstudioapi)
 library(devtools)
-devtools::install_github('charlie86/spotifyr')
-library(spotifyr)
-library(kableExtra)
 ```
 
 ```{r}
-Sys.setenv(SPOTIFY_CLIENT_ID = 'f2dd1d921e0b4ee6bdfdb019981da2ce')
-Sys.setenv(SPOTIFY_CLIENT_SECRET = '21595e5404494df2b55150af90d3ab50')
-
-access_token <- get_spotify_access_token()
-get_my_top_artists_or_tracks(type = 'artists', 
-                             time_range = 'long_term', 
-                             limit = 5) %>% 
-    select(.data$name, .data$genres) %>% 
-    rowwise %>% 
-    mutate(genres = paste(.data$genres, collapse = ', ')) %>% 
-    ungroup %>% 
-    kable()
+top_artists <- read_csv("top_artists.csv")
+top_artists
 ```
