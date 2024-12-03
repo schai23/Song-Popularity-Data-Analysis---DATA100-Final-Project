@@ -23,4 +23,42 @@ library(devtools)
 ```{r}
 top_artists <- read_csv("top_artists.csv")
 top_artists
+
+top_100_songs <- read_csv("top_100_most_streamed_songs_on_spotify_updated.csv")
+top_100_songs
+```
+
+# Tidying Data
+
+```{r}
+# Joining the datasets
+test1 <- top_artists |>
+  filter(name == "The Weeknd") |>
+  rename(`Artist Popularity` = popularity)
+
+test2 <- top_100_songs |>
+  rename(name = `Artist Name(s)`, `Song Popularity` = Popularity) |>
+  filter(name == "The Weeknd")
+
+test3 <- test1 |>
+  inner_join(
+    test2,
+    by = join_by(name)
+  ) |>
+  arrange(`Song Popularity`)
+test3
+
+
+prepped_top_100_songs <- top_100_songs |>
+  rename(name = `Artist Name(s)`, popularity = Popularity) |>
+  select(-`Added By`)
+
+tidy_song_artists <- top_artists |>
+  inner_join(
+    prepped_top_100_songs,
+    by = join_by(name)
+  ) |>
+  arrange(popularity)
+
+tidy_song_artists
 ```
