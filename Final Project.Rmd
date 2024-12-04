@@ -18,14 +18,14 @@ List your group members, including their student numbers, here:
 library(tidyverse)
 library(tidymodels)
 library(devtools)
+library(data.table)
 ```
 
 ```{r}
-top_artists <- read_csv("top_artists.csv")
-top_artists
-
-top_100_songs <- read_csv("top_100_most_streamed_songs_on_spotify_updated.csv")
-top_100_songs
+folder_path <- "Raw Data Files"
+csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
+data_list <- lapply(csv_files, fread)
+data_list
 ```
 
 # Tidying Data
