@@ -32,13 +32,13 @@ data_list
 
 ```{r}
 # Joining the datasets
-all_data <- map(csv_files, read_and_convert)
-combined_data <- bind_rows(all_data)
-
 read_and_convert <- function(file) {
   df <- read_csv(file, col_types = cols(.default = "c"))
   df |> mutate(across(everything(), as.character))
 }
+
+all_data <- map(csv_files, read_and_convert)
+combined_data <- bind_rows(all_data)
 
 #numeric_cols <- c("Duration (ms)", "Popularity", "Danceability", "Energy", "Key", "Loudness", 
 #                  "Mode", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", 
