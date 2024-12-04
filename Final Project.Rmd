@@ -26,6 +26,9 @@ folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
 data_list
+
+big_dataset <- read_csv("tracks_features.csv")
+big_dataset
 ```
 
 # Tidying Data
@@ -47,19 +50,39 @@ numeric_cols <- c("Duration (ms)", "Popularity", "Danceability", "Energy", "Key"
 combined_data <- combined_data |>
   mutate(across(all_of(numeric_cols), as.numeric),
          `Release Date` = as.POSIXct(`Release Date`, format = "%Y-%m-%d")) |>
-  select(-`Added By`, -`Added At`)
+  select(Popularity, `Artist Name(s)`, `Track Name`, `Duration (ms)`)
+
 
 
 # Creating the decades column
-combined_data <- combined_data |>
+big_set <- big_dataset |>
+  mutate(release_date = as.POSIXct(release_date, format = "%Y-%m-%d")) |>
   mutate(Decade = case_when(
-    year(`Release Date`) >= 2020 ~ "2020+",
-    year(`Release Date`) >= 2010 | `Release Date` < 2020 ~ "2010-2020",
-    year(`Release Date`) < 2010 ~ "1998-2010"
-  ),
-# Fixing the duration column to not be in ms but instead in seconds
-  `Duration (sec)` = `Duration (ms)` / 1000)
-combined_data
+    year >= 2020 ~ "2020+",
+    year >= 2010 & year < 2020 ~ "2010 - 2020",
+    year >= 2000 & year < 2010 ~ "2000 - 2010",
+    year >= 1990 & year < 2000 ~ "1990 - 2000",
+    year >= 1980 & year < 1990 ~ "1980 - 1990",
+    year >= 1970 & year < 1980 ~ "1970 - 1980",
+    year >= 1960 & year < 1970 ~ "1960 - 1970",
+    year >= 1950 & year < 1960 ~ "1950 - 1960",
+    year < 1950 ~ "1950-",
+  ))
+
+# Fixing the duration column to not be in ms but instead in seconds. Also matching the "name" column for both datasets to prepare for join
+combined_data <- combined_data |>
+  mutate(`Duration (sec)` = `Duration (ms)` / 1000) |>
+  rename(name = `Artist Name(s)`)
+#combined_data
+
+
+# Adding popularity to the big dataset from our limited dataset
+complete_set <- big_set |>
+  inner_join(
+    combined_data,
+    by = join_by(name)
+  )
+complete_set
 ```
 
 # Visualizations
@@ -68,10 +91,8 @@ combined_data
 
 ```{r}
 split_artists <- strsplit(combined_data$`Artist Name(s)`, ",")
-artist_counts <- sapply(split_artists, length)
+artist_counts <- sapply(split_artists, length) #maybe use a for loop here
 
 combined_data$artist_count <- artist_counts
 
-combined_data |>
-  filter(artist_count > 1)
 ```
