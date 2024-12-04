@@ -32,33 +32,13 @@ data_list
 
 ```{r}
 # Joining the datasets
-test1 <- top_artists |>
-  filter(name == "The Weeknd") |>
-  rename(`Artist Popularity` = popularity)
+all_data <- map(csv_files, read_and_convert)
+combined_data <- bind_rows(all_data)
 
-test2 <- top_100_songs |>
-  rename(name = `Artist Name(s)`, `Song Popularity` = Popularity) |>
-  filter(name == "The Weeknd")
-
-test3 <- test1 |>
-  inner_join(
-    test2,
-    by = join_by(name)
-  ) |>
-  arrange(`Song Popularity`)
-test3
-
-
-prepped_top_100_songs <- top_100_songs |>
-  rename(name = `Artist Name(s)`, popularity = Popularity) |>
+combined_data <- combined_data |>
+  mutate(across(all_of(numeric_cols), as.numeric),
+         `Added At` = as.POSIXct(`Added At`, format = "%Y-%m-%d %H:%M:%S")) |>
   select(-`Added By`)
 
-tidy_song_artists <- top_artists |>
-  inner_join(
-    prepped_top_100_songs,
-    by = join_by(name)
-  ) |>
-  arrange(popularity)
-
-tidy_song_artists
+combined_data
 ```
