@@ -61,3 +61,17 @@ combined_data <- combined_data |>
   `Duration (sec)` = `Duration (ms)` / 1000)
 combined_data
 ```
+
+# Visualizations
+
+### Artist Count vs Popularity
+
+```{r}
+split_artists <- strsplit(combined_data$`Artist Name(s)`, ",")
+artist_counts <- sapply(split_artists, length)
+
+combined_data$artist_count <- artist_counts
+
+combined_data |>
+  filter(artist_count > 1)
+```
