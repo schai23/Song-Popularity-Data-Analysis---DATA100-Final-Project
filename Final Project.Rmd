@@ -40,15 +40,22 @@ read_and_convert <- function(file) {
 all_data <- map(csv_files, read_and_convert)
 combined_data <- bind_rows(all_data)
 
-#numeric_cols <- c("Duration (ms)", "Popularity", "Danceability", "Energy", "Key", "Loudness", 
-#                  "Mode", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", 
-#                  "Valence", "Tempo", "Time Signature")
-
+numeric_cols <- c("Duration (ms)", "Popularity", "Danceability", "Energy", "Key", "Loudness", 
+                  "Mode", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", 
+                  "Valence", "Tempo", "Time Signature")
 
 combined_data <- combined_data |>
   mutate(across(all_of(numeric_cols), as.numeric),
-         `Added At` = as.POSIXct(`Added At`, format = "%Y-%m-%d %H:%M:%S")) |>
+         `Release Date` = as.POSIXct(`Release Date`, format = "%Y-%m-%d")) |>
   select(-`Added By`, -`Added At`)
 
+
+# Creating the decades column
+combined_data <- combined_data |>
+  mutate(Decade = case_when(
+    year(`Release Date`) >= 2020 ~ "2020+",
+    year(`Release Date`) >= 2010 | `Release Date` < 2020 ~ "2010-2020",
+    year(`Release Date`) < 2010 ~ "1998-2010"
+  )) 
 combined_data
 ```
