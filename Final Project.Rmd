@@ -56,6 +56,8 @@ combined_data <- combined_data |>
     year(`Release Date`) >= 2020 ~ "2020+",
     year(`Release Date`) >= 2010 | `Release Date` < 2020 ~ "2010-2020",
     year(`Release Date`) < 2010 ~ "1998-2010"
-  )) 
+  ),
+# Fixing the duration column to not be in ms but instead in seconds
+  `Duration (sec)` = `Duration (ms)` / 1000)
 combined_data
 ```
