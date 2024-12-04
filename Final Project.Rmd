@@ -35,10 +35,20 @@ data_list
 all_data <- map(csv_files, read_and_convert)
 combined_data <- bind_rows(all_data)
 
+read_and_convert <- function(file) {
+  df <- read_csv(file, col_types = cols(.default = "c"))
+  df |> mutate(across(everything(), as.character))
+}
+
+#numeric_cols <- c("Duration (ms)", "Popularity", "Danceability", "Energy", "Key", "Loudness", 
+#                  "Mode", "Speechiness", "Acousticness", "Instrumentalness", "Liveness", 
+#                  "Valence", "Tempo", "Time Signature")
+
+
 combined_data <- combined_data |>
   mutate(across(all_of(numeric_cols), as.numeric),
          `Added At` = as.POSIXct(`Added At`, format = "%Y-%m-%d %H:%M:%S")) |>
-  select(-`Added By`)
+  select(-`Added By`, -`Added At`)
 
 combined_data
 ```
