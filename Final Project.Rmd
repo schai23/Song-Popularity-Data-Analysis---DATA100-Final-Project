@@ -199,6 +199,19 @@ artists_vs_popularity <- model_aug |>
 artists_vs_popularity
 ```
 
+# Acousticness vs Tempo and Explicity
+
+```{r}
+recipe_Acoust_temp <- recipe(acousticness ~ tempo + explicit, data = training(complete_set_split)) |>
+  step_dummy(all_nominal_predictors())
+Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
+  geom_point(aes(colour = time_signature)) +
+  geom_smooth(se = FALSE) +
+  facet_wrap(~explicit)
+
+Acous_vs_temp_plot
+```
+
 For whoever is writing insights (From Raiyan):
 
 -   Not enough data to accurately represent other regions
