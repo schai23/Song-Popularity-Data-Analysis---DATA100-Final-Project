@@ -92,9 +92,27 @@ complete_set <- big_set |>
     combined_data,
     by = join_by(name, id, artists)
   ) |>
+  select(-duration_ms) |> # Extra duration column from "big_set"
   # Getting rid of duplicates
   unique()
-complete_set
+
+# Creating the artist_count column
+complete_set$artist_count <- numeric(nrow(complete_set))
+for (i in 1:nrow(complete_set)) {
+  count <- 1  # Start with 1 because there's always at least one name
+  artist_string <- complete_set$artists[i]
+  
+  for (char in strsplit(artist_string, "")[[1]]) {
+    if (char == ",") {
+      count <- count + 1
+    }
+  }
+  complete_set$artist_count[i] <- count
+}
+
+
+complete_set_split <- initial_validation_split(complete_set, prop = c(0.6, 0.2), strata = Decade)
+complete_set_split
 ```
 
 # Visualizations
@@ -102,9 +120,44 @@ complete_set
 ### Artist Count vs Popularity
 
 ```{r}
-split_artists <- strsplit(combined_data$`Artist Name(s)`, ",")
-artist_counts <- sapply(split_artists, length) #maybe use a for loop here
+recipe_artist_pop <- recipe(Decade ~ artist_count + energy + danceability + Popularity + year, data = training(complete_set_split)) |>
+  step_log(artist_count, offset = 1) |>
+  step_log(Popularity, offset = 1) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors())
 
-combined_data$artist_count <- artist_counts
 
+baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split))
+
+artists_vs_popularity <- training(complete_set_split) |>
+  ggplot(aes(x = artist_count, y = Popularity, colour = Decade)) +
+  geom_point() + 
+  geom_smooth(method = "loess", se = FALSE) +
+  facet_wrap(~Decade) +
+  theme_minimal() +
+  labs(
+    x = "Artist Count",
+    y = "Recent Popularity",
+    title = "How much does the number of artists affect popularity?",
+    subtitle = "Split by decade"
+  )
+artists_vs_popularity
 ```
+
+For whoever is writing insights (From Raiyan):
+
+-   Not enough data to accurately represent other regions
+
+-   If you run without facet_wrap(\~Decade) 2010-2020 fully influences the entire graph. It is basically the whole graph because of the lack of any actual data points after splitting
+
+-   If we want to pull real information from this graph, we need one of the following to happen:
+
+    -   Far more information with popularity numbers for things in our dataset
+
+    -   Me to only focus on 2010-2020 (which at that point isn't even recent so it may reduce credibility)
+
+    -   Write a massive paragraph about what happened and how "there was nothing we could do" (even though there is the other options I said above)
+
+-   Only good option is to pull more information but without popularity values this becomes a little tough to try and argue (but if you think you can do it then go ahead)
+
+Send in discord what we decide so everyone is on the same page.
