@@ -90,7 +90,7 @@ combined_data$artists <- gsub(",([^ ])", ", \\1", combined_data$artists) #...ide
 complete_set <- big_set |>
   inner_join(
     combined_data,
-    by = join_by(name, id, artists)
+    by = join_by(id, artists)
   ) |>
   select(-duration_ms) |> # Extra duration column from "big_set"
   # Getting rid of duplicates
@@ -120,12 +120,11 @@ complete_set_split
 ### Artist Count vs Popularity
 
 ```{r}
-recipe_artist_pop <- recipe(Decade ~ artist_count + energy + danceability + Popularity + year, data = training(complete_set_split)) |>
+recipe_artist_pop <- recipe(Decade ~ artist_count + Popularity + year, data = training(complete_set_split)) |>
   step_log(artist_count, offset = 1) |>
   step_log(Popularity, offset = 1) |>
   step_normalize(all_numeric_predictors()) |>
   step_dummy(all_nominal_predictors())
-
 
 baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split))
 
@@ -141,6 +140,7 @@ artists_vs_popularity <- training(complete_set_split) |>
     title = "How much does the number of artists affect popularity?",
     subtitle = "Split by decade"
   )
+
 artists_vs_popularity
 ```
 
@@ -161,3 +161,9 @@ For whoever is writing insights (From Raiyan):
 -   Only good option is to pull more information but without popularity values this becomes a little tough to try and argue (but if you think you can do it then go ahead)
 
 Send in discord what we decide so everyone is on the same page.
+
+**UPDATES:**
+
+-   I modified the join properties to allow more data to come through, I'm not sure how it changes the quality of it but now we only sort by id/artist, no longer name. This lets us get a little bit of new information out...but its like 4 entries sooooo
+
+-   If we only sort by name/artist, I think its allowing duplicate entries (even though we isolated those earlier) so something funky might be happening. If we get desperate then we can use that though and that doubles our available data. Just a little bit dishonest since we are now intentionally skewing data
