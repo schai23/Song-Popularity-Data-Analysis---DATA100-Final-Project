@@ -50,7 +50,7 @@ numeric_cols <- c("Duration (ms)", "Popularity", "Danceability", "Energy", "Key"
 combined_data <- combined_data |>
   mutate(across(all_of(numeric_cols), as.numeric),
          `Release Date` = as.POSIXct(`Release Date`, format = "%Y-%m-%d")) |>
-  select(Popularity, `Artist Name(s)`, `Track Name`, `Duration (ms)`)
+  select(Popularity, `Artist Name(s)`, `Track Name`, `Duration (ms)`, `Track ID`)
 
 
 
@@ -72,16 +72,28 @@ big_set <- big_dataset |>
 # Fixing the duration column to not be in ms but instead in seconds. Also matching the "name" column for both datasets to prepare for join
 combined_data <- combined_data |>
   mutate(`Duration (sec)` = `Duration (ms)` / 1000) |>
-  rename(name = `Artist Name(s)`)
+  rename(
+    `artists` = `Artist Name(s)`,
+    `id` = `Track ID`,
+    `name` = `Track Name`
+    )
 #combined_data
 
+# Fixing artists names in "big_set" to be more similar to strings instead of lists/arrays
+big_set$artists <- gsub("\\[|\\]|'", "", big_set$artists)
+
+# Matching the formatting of the new artists column in combined_data to the one in big_set.
+# This line adds a space after every comma...
+combined_data$artists <- gsub(",([^ ])", ", \\1", combined_data$artists) #...idek man this is built on thoughts and prayers
 
 # Adding popularity to the big dataset from our limited dataset
 complete_set <- big_set |>
   inner_join(
     combined_data,
-    by = join_by(name)
-  )
+    by = join_by(name, id, artists)
+  ) |>
+  # Getting rid of duplicates
+  unique()
 complete_set
 ```
 
