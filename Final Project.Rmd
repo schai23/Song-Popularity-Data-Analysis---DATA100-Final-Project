@@ -145,8 +145,8 @@ model <- linear_reg() |>
 fit_artist_pop <- model |>
   fit(artist_count ~ Popularity, data = training(complete_set_split))
 
-model_coef <- tidy(fit_model)
-model_aug <- augment(fit_model, new_data = training(complete_set_split))
+model_coef <- tidy(fit_artist_pop)
+model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
 
 
 recipe_artist_pop <- recipe(pop_scale ~ artist_count + Popularity + Decade, data = training(complete_set_split)) |>
