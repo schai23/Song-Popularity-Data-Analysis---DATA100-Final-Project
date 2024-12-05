@@ -94,7 +94,25 @@ complete_set <- big_set |>
   ) |>
   select(-duration_ms) |> # Extra duration column from "big_set"
   # Getting rid of duplicates
-  unique()
+  unique() |>
+  arrange(artists) 
+
+# Modifying the popularity set to be an effective factor variable set (that has ranges)
+complete_set <- complete_set |>
+  mutate(pop_scale = case_when(
+    Popularity <= 10 ~ "0-10",
+    Popularity > 10 & Popularity <= 20 ~ "11-20",
+    Popularity > 20 & Popularity <= 30 ~ "21-30",
+    Popularity > 30 & Popularity <= 40 ~ "31-40",
+    Popularity > 40 & Popularity <= 50 ~ "41-50",
+    Popularity > 50 & Popularity <= 60 ~ "51-60",
+    Popularity > 60 & Popularity <= 70 ~ "61-70",
+    Popularity > 70 & Popularity <= 80 ~ "71-80",
+    Popularity > 80 & Popularity <= 90 ~ "81-90",
+    Popularity > 90 & Popularity <= 100 ~ "91-100"
+  ),
+    pop_scale = as.factor(pop_scale)
+    )
 
 # Creating the artist_count column
 complete_set$artist_count <- numeric(nrow(complete_set))
@@ -111,6 +129,7 @@ for (i in 1:nrow(complete_set)) {
 }
 
 
+
 complete_set_split <- initial_validation_split(complete_set, prop = c(0.6, 0.2), strata = Decade)
 complete_set_split
 ```
@@ -120,26 +139,62 @@ complete_set_split
 ### Artist Count vs Popularity
 
 ```{r}
-recipe_artist_pop <- recipe(Decade ~ artist_count + Popularity + year, data = training(complete_set_split)) |>
-  step_log(artist_count, offset = 1) |>
-  step_log(Popularity, offset = 1) |>
-  step_normalize(all_numeric_predictors()) |>
+model <- linear_reg() |>
+  set_engine("lm")
+
+fit_artist_pop <- model |>
+  fit(artist_count ~ Popularity, data = training(complete_set_split))
+
+model_coef <- tidy(fit_model)
+model_aug <- augment(fit_model, new_data = training(complete_set_split))
+
+
+recipe_artist_pop <- recipe(pop_scale ~ artist_count + Popularity + Decade, data = training(complete_set_split)) |>
+  #step_log(artist_count, offset = 1) |>
+  #step_normalize(all_numeric_predictors()) |>
   step_dummy(all_nominal_predictors())
 
-baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split))
+baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split)) |>
+  pivot_longer(
+    cols = starts_with("Decade_X"),
+    names_to = "Decade",
+    values_to = "which_dec",
+    values_drop_na = TRUE
+  ) |>
+  filter(which_dec == 1) |>
+  select(-which_dec)
 
-artists_vs_popularity <- training(complete_set_split) |>
-  ggplot(aes(x = artist_count, y = Popularity, colour = Decade)) +
-  geom_point() + 
-  geom_smooth(method = "loess", se = FALSE) +
-  facet_wrap(~Decade) +
+# TEST MODEL
+art_test <- ggplot(baked_data, aes(x = artist_count, y = pop_scale, color = Decade)) +
+  geom_count(alpha = 0.6) +
+  #geom_smooth(method = "lm", se = FALSE) +
+  scale_x_log10() +
   theme_minimal() +
   labs(
+    title = "Relationship between Artist Count and Scaled Popularity",
+    subtitle = "Comparison across decades",
     x = "Artist Count",
-    y = "Recent Popularity",
-    title = "How much does the number of artists affect popularity?",
-    subtitle = "Split by decade"
+    y = "Scaled Popularity",
+    color = "Decade"
   )
+art_test 
+
+
+# MAIN MODEL
+artists_vs_popularity <- model_aug |>
+  ggplot(aes(x = artist_count, y = .pred)) +
+  geom_point(aes(colour = Decade)) + 
+  facet_wrap(~Decade) +
+  #geom_abline(intercept = 1.6530366571, slope = 0.01) + <- HAS SOME PROMISE BUT IDK HOW TO USE EFFECTIVELY HERE
+  geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
+  #geom_smooth(color = "black", method = "loess", se = FALSE) +
+  theme_minimal() #+
+  #labs(
+  #  x = "Artist Count",
+  #  y = "Recent Popularity",
+  #  title = "How much does the number of artists affect popularity?",
+  #  subtitle = "Split by decade"
+  #)
 
 artists_vs_popularity
 ```
