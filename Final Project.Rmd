@@ -284,11 +284,11 @@ lm_model <- lm(formula, data = scaled_data)
 
 # Make predictions with the linear model
 lm_predictions <- predict(lm_model, newdata = scaled_data)
-lm_rmse <- sqrt(mean((lm_predictions - scaled_data$artist_count)^2)) # Note: No need for $.pred here
+lm_rmse <- sqrt(mean((lm_predictions - scaled_data$artist_count)^2)) # Note: No need for .pred here
 
 # Compare RMSE
 rmse_comparison <- data.frame(
-    Model = c("MLP", "LM"), # Removed RF as it was not defined here
+    Model = c("MLP", "LM"), 
     RMSE = c(mlp_rmse, lm_rmse)
 )
 
@@ -296,7 +296,7 @@ rmse_comparison <- data.frame(
 predictions_df <- data.frame(
     Actual = scaled_data$artist_count,
     MLP = as.vector(mlp_predictions),
-    LM = lm_predictions # Removed RF as it was not defined here
+    LM = lm_predictions
 )
 
 predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "Model", values_to = "Predicted")
