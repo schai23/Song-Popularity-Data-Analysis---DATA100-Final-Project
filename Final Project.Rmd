@@ -22,7 +22,6 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 
 # Libraries
 
-
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
 
 library(tidyverse)
@@ -36,7 +35,6 @@ library(ranger)
 library(data.table)
 ```
 
-
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
 
 folder_path <- "Raw Data Files"
@@ -49,7 +47,6 @@ big_dataset
 ```
 
 # Tidying Data
-
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
 
@@ -179,7 +176,6 @@ Acous_vs_temp_plot
 
 The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
 
-
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
 
 plot_year_histogram <- training(complete_set_split) |> 
@@ -219,7 +215,6 @@ The bar graph above showcases how the musical key of our data changes throughout
 The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
 
 ### Exploratory Linear Model 2 - Linear Model
-
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
 
@@ -281,7 +276,6 @@ print(paste("RMSE:", rmse))
 ```
 
 ### Final Model Comparison
-
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
 
