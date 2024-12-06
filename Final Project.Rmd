@@ -22,7 +22,8 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 
 # Libraries
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 library(tidyverse)
 library(tidymodels)
 library(devtools)
@@ -34,7 +35,8 @@ library(ranger)
 library(data.table)
 ```
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
@@ -46,7 +48,8 @@ big_dataset
 
 # Tidying Data
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 # Joining the datasets
 read_and_convert <- function(file) {
   df <- read_csv(file, col_types = cols(.default = "c"))
@@ -161,7 +164,8 @@ Overall, this process creates a structured and well-prepared dataset that is rea
 
 ### Exploratory Plots - Acousticness vs Tempo and Explicity
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
   geom_point(aes(colour = time_signature)) +
   geom_smooth(se = FALSE) +
@@ -172,7 +176,8 @@ Acous_vs_temp_plot
 
 The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 plot_year_histogram <- training(complete_set_split) |> 
   ggplot(aes(x = year, fill = after_stat(count))) + 
   geom_histogram( color = "black") +
@@ -190,7 +195,7 @@ The graph shown above demonstrates one of the measure we took to circumvent the 
 
 With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
 plot_bar <- training(complete_set_split) |> 
   ggplot(aes(x = Decade, group = key, fill = key)) + 
   geom_bar(position = "dodge") +
@@ -211,7 +216,8 @@ The future possibility of this study could further dive into the impacts of soci
 
 ### Exploratory Linear Model 2 - Linear Model
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 set.seed(1234)
 valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
@@ -248,7 +254,7 @@ artists_vs_popularity
 
 ### Exploratory Linear Model 2 - Neural Net/MLP
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
@@ -271,7 +277,8 @@ print(paste("RMSE:", rmse))
 
 ### Final Model Comparison
 
-```{r, results = 'hide', warning = FALSE, message=FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 set.seed(1234)
 
 # Prepare data
