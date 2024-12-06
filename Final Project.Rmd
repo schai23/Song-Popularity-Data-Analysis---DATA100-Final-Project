@@ -23,20 +23,16 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 # Libraries
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
-
 library(tidyverse)
 library(tidymodels)
 library(devtools)
 library(ggrepel)
-#library(ggraph)
-#library(igraph)
 library(neuralnet)
 library(ranger)
 library(data.table)
 ```
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
-
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
@@ -67,8 +63,6 @@ combined_data <- combined_data |>
   mutate(across(all_of(numeric_cols), as.numeric),
          `Release Date` = as.POSIXct(`Release Date`, format = "%Y-%m-%d")) |>
   select(Popularity, `Artist Name(s)`, `Track Name`, `Duration (ms)`, `Track ID`)
-
-
 
 # Creating the decades column
 big_set <- big_dataset |>
@@ -112,7 +106,6 @@ complete_set <- big_set |>
   # Getting rid of duplicates
   unique() |>
   arrange(artists) 
-
 # Modifying the popularity set to be an effective factor variable set (that has ranges)
 complete_set <- complete_set |>
   mutate(pop_scale = case_when(
@@ -129,7 +122,6 @@ complete_set <- complete_set |>
   ),
     pop_scale = as.factor(pop_scale)
     )
-
 # Creating the artist_count column
 complete_set$artist_count <- numeric(nrow(complete_set))
 for (i in 1:nrow(complete_set)) {
@@ -143,8 +135,6 @@ for (i in 1:nrow(complete_set)) {
   }
   complete_set$artist_count[i] <- count
 }
-
-
 
 complete_set_split <- initial_validation_split(complete_set, prop = c(0.6, 0.2), strata = Decade)
 complete_set_split
@@ -170,7 +160,6 @@ Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticnes
   geom_point(aes(colour = time_signature)) +
   geom_smooth(se = FALSE) +
   facet_wrap(~explicit)
-
 Acous_vs_temp_plot
 ```
 
@@ -187,7 +176,6 @@ plot_year_histogram <- training(complete_set_split) |>
        y = "Count",
        fill = "Frequency") +
   theme_minimal()
-
 plot_year_histogram
 ```
 
@@ -205,9 +193,7 @@ plot_bar <- training(complete_set_split) |>
        fill = "Musical Key") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 plot_bar
-
 ```
 
 The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
@@ -217,7 +203,6 @@ The future possibility of this study could further dive into the impacts of soci
 ### Exploratory Linear Model 2 - Linear Model
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
-
 set.seed(1234)
 valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
@@ -233,12 +218,10 @@ model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
 recipe_artist_pop <- recipe(artist_count ~ Popularity + Decade, data = training(complete_set_split)) |>
   step_dummy(all_nominal_predictors())
 
-
 artists_vs_popularity <- model_aug |>
   ggplot(aes(x = artist_count, y = .pred)) +
   geom_point(aes(colour = Decade)) + 
   facet_wrap(~Decade) +
-  #geom_abline(intercept = 1.6530366571, slope = 0.01) + <- HAS SOME PROMISE BUT IDK HOW TO USE EFFECTIVELY HERE
   geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
   #geom_smooth(color = "black", method = "loess", se = FALSE) +
   theme_minimal() +
@@ -338,9 +321,7 @@ Our results showed that the MLP model followed the data points significantly mor
 
 We also performed feature engineering to enhance the quality of our input variables, but chose not to use certain features like loudness and energy, as they did not contribute meaningfully to our model. Instead, we focused on variables that had a stronger correlation with track popularity, such as dancibility, acousticness, and valence. This targeted approach helped in refining the model and improving the accuracy of our predictions.
 
-In conclusion, this project highlighted the importance of choosing appropriate features and models for predictive analysis. While the linear regression model served as a baseline, the superior performance of the MLP model underscored the value of leveraging advanced machine learning techniques for complex datasets. Our work illustrates how thoughtful feature selection and robust modeling approaches can yield significant insights into predicting track popularity on Spotify. **(edited)**
-
--Message \@seamuschai
+In conclusion, this project highlighted the importance of choosing appropriate features and models for predictive analysis. While the linear regression model served as a baseline, the superior performance of the MLP model underscored the value of leveraging advanced machine learning techniques for complex datasets. Our work illustrates how thoughtful feature selection and robust modeling approaches can yield significant insights into predicting track popularity on Spotify.
 
 # Limitations
 
