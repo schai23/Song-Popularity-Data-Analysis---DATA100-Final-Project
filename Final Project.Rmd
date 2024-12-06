@@ -235,7 +235,7 @@ artists_vs_popularity
 
 ### Exploratory Linear Model 2 - Neural Net/MLP
 
-```{r, out.width='65%'}
+```{r, include = FALSE, out.width='65%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
@@ -250,7 +250,7 @@ mlp_model <- neuralnet(formula,
 
 mlp_predictions <- predict(mlp_model, newdata = scaled_data)
 
-print(plot(mlp_model))
+plot(mlp_model, rep = "best")
 
 rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
 print(paste("RMSE:", rmse))
