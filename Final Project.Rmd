@@ -150,7 +150,7 @@ Overall, this process creates a structured and well-prepared dataset that is rea
 
 # Visualizations
 
-### Exploratory Plots - Acousticness vs Tempo and Explicity
+### Exploratory Plot 1- Acousticness vs Tempo and Explicity
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
 
@@ -162,6 +162,8 @@ Acous_vs_temp_plot
 ```
 
 The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
+
+### Exploratory Plot 2 - Distribution of songs based on year
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
 
@@ -181,6 +183,8 @@ The graph shown above demonstrates one of the measure we took to circumvent the 
 
 With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
 
+### Exploratory Plot 3 - Most common musical key based on decade
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
 plot_bar <- training(complete_set_split) |> 
   ggplot(aes(x = Decade, group = key, fill = key)) + 
@@ -197,6 +201,65 @@ plot_bar
 The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
 
 The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
+
+### Model Plot 1 - Artist Count vs Popularity Line
+
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+model <- linear_reg() |>
+  set_engine("lm")
+
+fit_artist_pop <- model |>
+  fit(artist_count ~ pop_scale, data = training(complete_set_split))
+
+model_coef <- tidy(fit_artist_pop)
+model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
+
+
+recipe_artist_pop <- recipe(pop_scale ~ artist_count + Popularity + Decade, data = training(complete_set_split)) |>
+  step_dummy(all_nominal_predictors())
+
+artists_vs_popularity <- model_aug |>
+  ggplot(aes(x = artist_count, y = .pred)) +
+  geom_point(aes(colour = Decade)) + 
+  facet_wrap(~Decade) +
+  geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(
+    x = "Artist Count",
+    y = "Recent Popularity",
+    title = "How much does the number of artists affect popularity?",
+    subtitle = "Split by decade"
+  )
+
+artists_vs_popularity
+```
+
+### Model Plot 2 - Artist Count vs Popularity Factor
+
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split)) |>
+  pivot_longer(
+    cols = starts_with("Decade_X"),
+    names_to = "Decade",
+    values_to = "which_dec",
+    values_drop_na = TRUE
+  ) |>
+  filter(which_dec == 1) |>
+  select(-which_dec)
+
+art_test <- ggplot(baked_data, aes(x = artist_count, y = pop_scale, color = Decade)) +
+  geom_count(alpha = 0.6) +
+  scale_x_log10() +
+  theme_minimal() +
+  labs(
+    title = "Relationship between Artist Count and Scaled Popularity",
+    subtitle = "Comparison across decades",
+    x = "Artist Count",
+    y = "Scaled Popularity",
+    color = "Decade"
+  )
+art_test 
+```
 
 ### Exploratory Linear Model 1 - Linear Model
 
@@ -264,7 +327,7 @@ set.seed(1234)
 
 # Prepare data
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
-model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
+model_data <- cbind(model_data, artist_count = testing(complete_set_split)$artist_count)
 scaled_data <- as.data.frame(scale(model_data))
 colnames(scaled_data) <- make.names(colnames(scaled_data))
 
@@ -305,9 +368,9 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_point(alpha = 0.5) +
     geom_smooth() +
     facet_wrap(~ Model) +
-    labs(title = "Actual vs Predicted Popularity",
-         subtitle = "Lower value means lower popularity",
-         x = "Actual Popularity",
+    labs(title = "Artist Count vs Predicted Popularity",
+         subtitle = "Lower Variance means more precise",
+         x = "Artist Count",
          y = "Predicted Popularity") +
     theme_minimal()
 ```
