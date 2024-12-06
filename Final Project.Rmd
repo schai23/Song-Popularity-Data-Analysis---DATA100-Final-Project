@@ -149,7 +149,7 @@ complete_set_split
 
 ## Tidying explanation
 
-We start the data processing flow by reading the CSV files and converting them into a consistent format. The function reads and ensures all columns are then combnines into a single combined_data table. In this table, there are numeric columns such as "Duration (ms)" and "Popularity" which are converted from character to numeric. The "Release Date" is also formatted as a date from a string. The columns such as Popularity, Artist Names, and Track Name are kept in the dataset for further analysis because they are important.
+We start the data processing flow by reading the CSV files and converting them into a consistent format. The function reads and ensures all columns are then combines into a single combined_data table. In this table, there are numeric columns such as "Duration (ms)" and "Popularity" which are converted from character to numeric. The "Release Date" is also formatted as a date from a string. The columns such as Popularity, Artist Names, and Track Name are kept in the dataset for further analysis because they are important.
 
 Next, the big_set dataset is enriched by adding a Decade column. When categorizing each track it helps to sort by decade ranges such as "2010 - 2020" or "2000 - 2010". This assists in understanding trends across different eras of music. The data was then standardized by converting the track durations from millisends to second and then renaming columns to align with the big_set structure. Artist names were cleaned for consistency. This allowed other datasets to be compatible for merging. The 2 datasets are merged using an inner join based on the ID and Artists columns. After clearing out duplicate entries and sorting the data by artist names, the final complete_set is created with information about each track.
 
@@ -208,71 +208,6 @@ plot_bar
 The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
 
 The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
-
-### Extra Information
-
-```{r, results = 'hide', warning = FALSE, message=FALSE}
-model <- linear_reg() |>
-  set_engine("lm")
-
-fit_artist_pop <- model |>
-  fit(artist_count ~ pop_scale, data = training(complete_set_split))
-
-model_coef <- tidy(fit_artist_pop)
-model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
-
-
-recipe_artist_pop <- recipe(pop_scale ~ artist_count + Popularity + Decade, data = training(complete_set_split)) |>
-  #step_log(artist_count, offset = 1) |>
-  #step_normalize(all_numeric_predictors()) |>
-  step_dummy(all_nominal_predictors())
-
-baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split)) |>
-  pivot_longer(
-    cols = starts_with("Decade_X"),
-    names_to = "Decade",
-    values_to = "which_dec",
-    values_drop_na = TRUE
-  ) |>
-  filter(which_dec == 1) |>
-  select(-which_dec)
-
-# TEST MODEL
-art_test <- ggplot(baked_data, aes(x = artist_count, y = pop_scale, color = Decade)) +
-  geom_count(alpha = 0.6) +
-  #geom_smooth(method = "lm", se = FALSE) +
-  scale_x_log10() +
-  theme_minimal() +
-  labs(
-    title = "Relationship between Artist Count and Scaled Popularity",
-    subtitle = "Comparison across decades",
-    x = "Artist Count",
-    y = "Scaled Popularity",
-    color = "Decade"
-  )
-art_test 
-
-
-# MAIN MODEL
-artists_vs_popularity <- model_aug |>
-  ggplot(aes(x = artist_count, y = .pred)) +
-  geom_point(aes(colour = Decade)) + 
-  facet_wrap(~Decade) +
-  #geom_abline(intercept = 1.6530366571, slope = 0.01) + <- HAS SOME PROMISE BUT IDK HOW TO USE EFFECTIVELY HERE
-  geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
-  #geom_smooth(color = "black", method = "loess", se = FALSE) +
-  theme_minimal() #+
-  labs(
-    x = "Artist Count",
-    y = "Recent Popularity",
-    title = "How much does the number of artists affect popularity?",
-    subtitle = "Split by decade"
-  )
-
-artists_vs_popularity
-```
-
-Attached are some extra graphs that show the relation between Artist Count and Popularity to allow us to specify a relation between the two.
 
 ### Exploratory Linear Model 2 - Linear Model
 
