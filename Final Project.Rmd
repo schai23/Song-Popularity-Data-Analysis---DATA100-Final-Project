@@ -190,28 +190,7 @@ plot_bar <- training(complete_set_split) |>
 plot_bar
 ```
 
-The graph shown above demonstrates one of the measure we took to circumvent the downfalls of our data. This problem we had to solve was that the popularity value found on the Spotify api is more a score of relevancy with parts of its calculations being based on recent listens, this posed difficulty with songs as an older mor popular song would have a lower popularity score. To circumvent this issue we decided to pull the majority of data based in recent years as shown by the graph. This also caused some issue but that is also found in the limitations.
-
-With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
-
-### Exploratory Plot 3 - Most common musical key based on decade
-
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
-plot_bar <- training(complete_set_split) |> 
-  ggplot(aes(x = Decade, group = key, fill = key)) + 
-  geom_bar(position = "dodge") +
-  labs(title = "Song Count by Decade and Musical Key",
-       x = "Decade",
-       y = "Count",
-       fill = "Musical Key") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-plot_bar
-```
-
-The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
-
-The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
+The graph on the left is to show one of the measures we took when cleaning the data. This issue we encountered was the popularity metric that the Spotify api had was less about total popularity and more about relevancy therefore when graphing songs by popularity the data represented was not accurate. Therefore when sourcing the data we only chose songs that were released recently. The second graph showcases how the musical key of songs changes throughout the decades, with this we could suggest the types or taste in music tastes changeover the years. This must be taken with a grain of salt those as the data is such a small sample size. The future of this study could further analyze the impacts of society on music and certain keys potentially being more popular throughout different eras.
 
 ### Model Plot 1 - Artist Count vs Popularity Line
 
