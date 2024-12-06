@@ -22,7 +22,9 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 
 # Libraries
 
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 library(tidyverse)
 library(tidymodels)
 library(devtools)
@@ -34,7 +36,9 @@ library(ranger)
 library(data.table)
 ```
 
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
@@ -46,7 +50,9 @@ big_dataset
 
 # Tidying Data
 
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 # Joining the datasets
 read_and_convert <- function(file) {
   df <- read_csv(file, col_types = cols(.default = "c"))
@@ -147,11 +153,22 @@ complete_set_split <- initial_validation_split(complete_set, prop = c(0.6, 0.2),
 complete_set_split
 ```
 
+## Tidying explanation
+
+We start the data processing flow by reading the CSV files and converting them into a consistent format. The function reads and ensures all columns are then combnines into a single combined_data table. In this table, there are numeric columns such as "Duration (ms)" and "Popularity" which are converted from character to numeric. The "Release Date" is also formatted as a date from a string. The columns such as Popularity, Artist Names, and Track Name are kept in the dataset for further analysis because they are important.
+
+Next, the big_set dataset is enriched by adding a Decade column. When categorizing each track it helps to sort by decade ranges such as "2010 - 2020" or "2000 - 2010". This assists in understanding trends across different eras of music. The data was then standardized by converting the track durations from millisends to second and then renaming columns to align with the big_set structure. Artist names were cleaned for consistency. This allowed other datasets to be compatible for merging. The 2 datasets are merged using an inner join based on the ID and Artists columns. After clearing out duplicate entries and sorting the data by artist names, the final complete_set is created with information about each track.
+
+To make the analysis easier to model, we transformed some features into factor variables, enabling us to categorize data into meaningful groups or ranges for better interpretation and comparison. The popularity score is categorzied into factor ranges, "0-10" and "11-20" for the decades. This is to facilitate better interpretation of popularity distributions. An artist_count column is also added, which counts the number of artists collaborating on each track by identifying the commas in the Artists field. Finally, the cleaned and changed dataset is split into training, validaiton, and test sets using a stratified approach based on the Decade column. This ensures each decade is proportionally represented, creating balanced dataset for future modelling and analysis potential.
+
+Overall, this process creates a structured and well-prepared dataset that is ready for further exploration, such as analyzing trends in music popularity over time or building predictive models based on track attributes.
+
 # Visualizations
 
 ### Exploratory Plots - Acousticness vs Tempo and Explicity
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
   geom_point(aes(colour = time_signature)) +
   geom_smooth(se = FALSE) +
@@ -162,7 +179,9 @@ Acous_vs_temp_plot
 
 The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
 
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 plot_year_histogram <- training(complete_set_split) |> 
   ggplot(aes(x = year, fill = after_stat(count))) + 
   geom_histogram( color = "black") +
@@ -199,74 +218,11 @@ The bar graph above showcases how the musical key of our data changes throughout
 
 The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
 
-### Extra Information
-
-```{r, results = 'hide', message = FALSE, warning = FALSE}
-model <- linear_reg() |>
-  set_engine("lm")
-
-fit_artist_pop <- model |>
-  fit(artist_count ~ pop_scale, data = training(complete_set_split))
-
-model_coef <- tidy(fit_artist_pop)
-model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
-
-
-recipe_artist_pop <- recipe(pop_scale ~ artist_count + Popularity + Decade, data = training(complete_set_split)) |>
-  #step_log(artist_count, offset = 1) |>
-  #step_normalize(all_numeric_predictors()) |>
-  step_dummy(all_nominal_predictors())
-
-baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split)) |>
-  pivot_longer(
-    cols = starts_with("Decade_X"),
-    names_to = "Decade",
-    values_to = "which_dec",
-    values_drop_na = TRUE
-  ) |>
-  filter(which_dec == 1) |>
-  select(-which_dec)
-
-# TEST MODEL
-art_test <- ggplot(baked_data, aes(x = artist_count, y = pop_scale, color = Decade)) +
-  geom_count(alpha = 0.6) +
-  #geom_smooth(method = "lm", se = FALSE) +
-  scale_x_log10() +
-  theme_minimal() +
-  labs(
-    title = "Relationship between Artist Count and Scaled Popularity",
-    subtitle = "Comparison across decades",
-    x = "Artist Count",
-    y = "Scaled Popularity",
-    color = "Decade"
-  )
-art_test 
-
-
-# MAIN MODEL
-artists_vs_popularity <- model_aug |>
-  ggplot(aes(x = artist_count, y = .pred)) +
-  geom_point(aes(colour = Decade)) + 
-  facet_wrap(~Decade) +
-  #geom_abline(intercept = 1.6530366571, slope = 0.01) + <- HAS SOME PROMISE BUT IDK HOW TO USE EFFECTIVELY HERE
-  geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
-  #geom_smooth(color = "black", method = "loess", se = FALSE) +
-  theme_minimal() #+
-  labs(
-    x = "Artist Count",
-    y = "Recent Popularity",
-    title = "How much does the number of artists affect popularity?",
-    subtitle = "Split by decade"
-  )
-
-artists_vs_popularity
-```
-
-Attached are some extra graphs that show the relation between Artist Count and Popularity to allow us to specify a relation between the two.
-
 ### Exploratory Linear Model 2 - Linear Model
 
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 set.seed(1234)
 valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
@@ -326,7 +282,9 @@ print(paste("RMSE:", rmse))
 
 ### Final Model Comparison
 
+
 ```{r, results = 'hide', message = FALSE, warning = FALSE}
+
 set.seed(1234)
 
 # Prepare data
@@ -377,6 +335,18 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
          y = "Predicted Artist Count") +
     theme_minimal()
 ```
+
+# Conclusion
+
+In this project, we aimed to predict the popularity of tracks on Spotify using various models and features. We explored two modelling techniques, including Linear Regression and a Machine Learning Model called Multilayer Perceptron (MLP), to try and develop a proper prediction model. One notable approach was creating a custom metric, similar to the one used by Spotify, to better capture the factors influencing track popularity.
+
+Our results showed that the MLP model followed the data points significantly more accurately than the linear regression model. The linear model provided much less accuracy, as it struggled to capture the complexities and non-linear relationships in the data. In contrast, the MLP model was able to capture more detailed patterns, resulting in better predictive performance. This was clearly evident in the scatter plot, where the MLP model demonstrated a tighter clustering of predictions around the true values, while the linear model showed more spread, indicating less accurate predictions.
+
+We also performed feature engineering to enhance the quality of our input variables, but chose not to use certain features like loudness and energy, as they did not contribute meaningfully to our model. Instead, we focused on variables that had a stronger correlation with track popularity, such as dancibility, acousticness, and valence. This targeted approach helped in refining the model and improving the accuracy of our predictions.
+
+In conclusion, this project highlighted the importance of choosing appropriate features and models for predictive analysis. While the linear regression model served as a baseline, the superior performance of the MLP model underscored the value of leveraging advanced machine learning techniques for complex datasets. Our work illustrates how thoughtful feature selection and robust modeling approaches can yield significant insights into predicting track popularity on Spotify. **(edited)**
+
+-Message \@seamuschai
 
 # Limitations
 
