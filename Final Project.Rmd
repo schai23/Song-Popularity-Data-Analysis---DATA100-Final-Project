@@ -305,9 +305,10 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_point(alpha = 0.5) +
     geom_smooth() +
     facet_wrap(~ Model) +
-    labs(title = "Actual vs Predicted Artist Count",
-         x = "Actual Artist Count",
-         y = "Predicted Artist Count") +
+    labs(title = "Actual vs Predicted Popularity",
+         subtitle = "Lower value means lower popularity",
+         x = "Actual Popularity",
+         y = "Predicted Popularity") +
     theme_minimal()
 ```
 
