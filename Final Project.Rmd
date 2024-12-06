@@ -236,6 +236,8 @@ plot_year_histogram
 
 The graph shown above demonstrates one of the measure we took to circumvent the downfalls of our data. This problem we had to solve was that the popularity value found on the Spotify api is more a score of relevancy with parts of its calculations being based on recent listens, this posed difficulty with songs as an older mor popular song would have a lower popularity score. To circumvent this issue we decided to pull the majority of data based in recent years as shown by the graph. This also caused some issue but that is also found in the limitations.
 
+With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
+
 ```{r}
 plot_bar <- training(complete_set_split) |> 
   ggplot(aes(x = Decade, group = key, fill = key)) + 
