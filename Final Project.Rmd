@@ -18,7 +18,7 @@ Every year, Spotify users receive a summary of their year in music, nicknamed "w
 
 # Goals
 
-The goal of this analysis will be to compare key metrics for
+The goal of this analysis will be to compare key metrics for Spotify's songs via their API (Application Programming Interface) to see if songs with certain attributes perform better than others. To do this, we will graph various different attributes against each other and measure it relative to popularity to see correlation. If meaningful correlation is found then we will create models for the data so that future artists can optimize their songs.
 
 # Libraries
 
