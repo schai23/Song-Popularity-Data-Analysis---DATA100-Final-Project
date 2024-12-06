@@ -199,7 +199,7 @@ artists_vs_popularity <- model_aug |>
 artists_vs_popularity
 ```
 
-# Acousticness vs Tempo and Explicity
+### Acousticness vs Tempo and Explicity
 
 ```{r}
 recipe_Acoust_temp <- recipe(acousticness ~ tempo + explicit, data = training(complete_set_split)) |>
