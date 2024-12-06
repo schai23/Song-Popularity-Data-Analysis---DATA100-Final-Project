@@ -281,7 +281,7 @@ artists_vs_popularity
 
 ### Exploratory Model 2 - Neural Net/MLP
 
-```{r, out.width='65%'}
+```{r, out.width='50%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
@@ -352,7 +352,7 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_smooth() +
     facet_wrap(~ Model) +
     labs(title = "Artist Count vs Predicted Popularity",
-         subtitle = "Lower Variance means more precise",
+         #subtitle = "Lower Variance means more precise",
          x = "Artist Count",
          y = "Predicted Popularity") +
     theme_minimal()
