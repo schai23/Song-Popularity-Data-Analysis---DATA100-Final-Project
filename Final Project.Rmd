@@ -22,7 +22,7 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 
 # Libraries
 
-```{r}
+```{r, results = 'hide', warning = FALSE}
 library(tidyverse)
 library(tidymodels)
 library(devtools)
@@ -34,7 +34,7 @@ library(ranger)
 library(data.table)
 ```
 
-```{r}
+```{r, results = 'hide', warning = FALSE}
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
@@ -46,7 +46,7 @@ big_dataset
 
 # Tidying Data
 
-```{r}
+```{r, results = 'hide', warning = FALSE}
 # Joining the datasets
 read_and_convert <- function(file) {
   df <- read_csv(file, col_types = cols(.default = "c"))
@@ -149,9 +149,59 @@ complete_set_split
 
 # Visualizations
 
-### Artist Count vs Popularity
+### Exploratory Plots - Acousticness vs Tempo and Explicity
 
-```{r}
+```{r, results = 'hide', warning = FALSE}
+Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
+  geom_point(aes(colour = time_signature)) +
+  geom_smooth(se = FALSE) +
+  facet_wrap(~explicit)
+
+Acous_vs_temp_plot
+```
+
+The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
+
+```{r, results = 'hide', warning = FALSE}
+plot_year_histogram <- training(complete_set_split) |> 
+  ggplot(aes(x = year, fill = after_stat(count))) + 
+  geom_histogram( color = "black") +
+  scale_fill_viridis_c() +
+  labs(title = "Distribution of Years",
+       x = "Year",
+       y = "Count",
+       fill = "Frequency") +
+  theme_minimal()
+
+plot_year_histogram
+```
+
+The graph shown above demonstrates one of the measure we took to circumvent the downfalls of our data. This problem we had to solve was that the popularity value found on the Spotify api is more a score of relevancy with parts of its calculations being based on recent listens, this posed difficulty with songs as an older mor popular song would have a lower popularity score. To circumvent this issue we decided to pull the majority of data based in recent years as shown by the graph. This also caused some issue but that is also found in the limitations.
+
+With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
+
+```{r, results = 'hide', warning = FALSE}
+plot_bar <- training(complete_set_split) |> 
+  ggplot(aes(x = Decade, group = key, fill = key)) + 
+  geom_bar(position = "dodge") +
+  labs(title = "Song Count by Decade and Musical Key",
+       x = "Decade",
+       y = "Count",
+       fill = "Musical Key") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+plot_bar
+
+```
+
+The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
+
+The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
+
+### Extra Information
+
+```{r, results = 'hide', warning = FALSE}
 model <- linear_reg() |>
   set_engine("lm")
 
@@ -202,69 +252,21 @@ artists_vs_popularity <- model_aug |>
   geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
   #geom_smooth(color = "black", method = "loess", se = FALSE) +
   theme_minimal() #+
-  #labs(
-  #  x = "Artist Count",
-  #  y = "Recent Popularity",
-  #  title = "How much does the number of artists affect popularity?",
-  #  subtitle = "Split by decade"
-  #)
+  labs(
+    x = "Artist Count",
+    y = "Recent Popularity",
+    title = "How much does the number of artists affect popularity?",
+    subtitle = "Split by decade"
+  )
 
 artists_vs_popularity
 ```
 
-### Exploratory Plots - Acousticness vs Tempo and Explicity
+Attached are some extra graphs that show the relation between Artist Count and Popularity to allow us to specify a relation between the two.
 
-```{r}
-Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
-  geom_point(aes(colour = time_signature)) +
-  geom_smooth(se = FALSE) +
-  facet_wrap(~explicit)
+### Exploratory Linear Model 2 - Linear Model
 
-Acous_vs_temp_plot
-```
-
-The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
-
-```{r}
-plot_year_histogram <- training(complete_set_split) |> 
-  ggplot(aes(x = year, fill = after_stat(count))) + 
-  geom_histogram( color = "black") +
-  scale_fill_viridis_c() +
-  labs(title = "Distribution of Years",
-       x = "Year",
-       y = "Count",
-       fill = "Frequency") +
-  theme_minimal()
-
-plot_year_histogram
-```
-
-The graph shown above demonstrates one of the measure we took to circumvent the downfalls of our data. This problem we had to solve was that the popularity value found on the Spotify api is more a score of relevancy with parts of its calculations being based on recent listens, this posed difficulty with songs as an older mor popular song would have a lower popularity score. To circumvent this issue we decided to pull the majority of data based in recent years as shown by the graph. This also caused some issue but that is also found in the limitations.
-
-With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
-
-```{r}
-plot_bar <- training(complete_set_split) |> 
-  ggplot(aes(x = Decade, group = key, fill = key)) + 
-  geom_bar(position = "dodge") +
-  labs(title = "Song Count by Decade and Musical Key",
-       x = "Decade",
-       y = "Count",
-       fill = "Musical Key") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-plot_bar
-
-```
-
-The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
-
-The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
-
-For whoever is writing insights (From Raiyan):
-
-```{r}
+```{r, results = 'hide', warning = FALSE}
 set.seed(1234)
 valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
@@ -301,7 +303,7 @@ artists_vs_popularity
 
 ### Exploratory Linear Model 2 - Neural Net/MLP
 
-```{r}
+```{r, results = 'hide', warning = FALSE}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
@@ -324,7 +326,7 @@ print(paste("RMSE:", rmse))
 
 ### Final Model Comparison
 
-```{r}
+```{r, results = 'hide', warning = FALSE}
 set.seed(1234)
 
 # Prepare data
