@@ -5,13 +5,6 @@ date: "December 4th, 2024"
 output: pdf_document
 ---
 
-List your group members, including their student numbers, here:
-
--   Justin Lee (169085217)
--   Raiyan Junaid (169099497)
--   Dylan Plut (169083130)
--   Seamus Chai (169091540)
-
 # Introduction
 
 Every year, Spotify users receive a summary of their year in music, nicknamed "wrapped" as it comes out before Christmas. As any artist, it can be said that appearing on Spotify users wrapped summaries is a very respectable achievement, and since many users post their wrapped data on social media, it is also good for artist growth. Furthermore, artists partner with Spotify to make videos for their top listeners (people with the most minutes streamed). For artists that did not make users wrapped's this year, they will likely be wondering what it was about their songs, if anything, that prevented them from being relevant.
@@ -374,25 +367,3 @@ Throughout this project, we faced a very large number of technical challenges, w
 The second major issues that we faced was the "popularity" metric. This metric is based on current relevance, which meant songs from older artists such as The Beatles would be predestined to do worse in the metric based on their older release date. It seems obvious that instead of using the popularity metric the "total streams" metric should be used, except that Spotify does not allow that data to be pulled. The lack of a total song streams metric dealt a serious blow to this analysis, and while there are creative workarounds (such as scraping the online web player for each artist) they are both too time consuming and beyond the current scope of our ability for this project.
 
 It is also important to recognize that due to our workaround, songs were being handpicked. While we tried to be as diverse as possible with our picks, there is obviously a degree of bias to our representative sample of Spotify data. Also, handpicking data meant that we could only collect so much, and the lack of data explains the instability/inaccuracy of the models.
-
-.
-
-.
-
-.
-
-.
-
-.
-
-.
-
-.
-
-.
-
-.
-
-.
-
-.
