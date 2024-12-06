@@ -36,10 +36,8 @@ library(data.table)
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
-data_list
 
 big_dataset <- read_csv("tracks_features.csv")
-big_dataset
 ```
 
 # Tidying Data
@@ -200,7 +198,7 @@ The bar graph above showcases how the musical key of our data changes throughout
 
 The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
 
-### Exploratory Linear Model 2 - Linear Model
+### Exploratory Linear Model 1 - Linear Model
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
 set.seed(1234)
@@ -237,7 +235,7 @@ artists_vs_popularity
 
 ### Exploratory Linear Model 2 - Neural Net/MLP
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', out.width='65%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
