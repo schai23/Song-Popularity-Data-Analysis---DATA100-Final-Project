@@ -250,7 +250,7 @@ mlp_model <- neuralnet(formula,
 
 mlp_predictions <- predict(mlp_model, newdata = scaled_data)
 
-plot(mlp_model)
+print(plot(mlp_model))
 
 rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
 print(paste("RMSE:", rmse))
