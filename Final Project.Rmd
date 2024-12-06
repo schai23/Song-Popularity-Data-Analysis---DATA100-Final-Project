@@ -15,7 +15,7 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 
 # Libraries
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 library(tidyverse)
 library(tidymodels)
 library(devtools)
@@ -25,7 +25,7 @@ library(ranger)
 library(data.table)
 ```
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
@@ -35,7 +35,7 @@ big_dataset <- read_csv("tracks_features.csv")
 
 # Tidying Data
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 
 # Joining the datasets
 read_and_convert <- function(file) {
@@ -143,7 +143,7 @@ Overall, this process creates a structured and well-prepared dataset that is rea
 
 ### Exploratory Plot 1- Acousticness vs Tempo and Explicity
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 
 Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
   geom_point(aes(colour = time_signature)) +
@@ -185,7 +185,7 @@ The graph on the left is to show one of the measures we took when cleaning the d
 
 ### Model Plot 1 - Artist Count vs Popularity Line
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 model <- linear_reg() |>
   set_engine("lm")
 
@@ -217,7 +217,7 @@ artists_vs_popularity
 
 ### Model Plot 2 - Artist Count vs Popularity Factor
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split)) |>
   pivot_longer(
     cols = starts_with("Decade_X"),
@@ -244,7 +244,7 @@ art_test
 
 ### Exploratory Model 1 - Linear Model
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 set.seed(1234)
 valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
@@ -279,7 +279,7 @@ artists_vs_popularity
 
 ### Exploratory Model 2 - Neural Net/MLP
 
-```{r, out.width='50%'}
+```{r, out.width='75%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
@@ -302,7 +302,7 @@ print(paste("RMSE:", rmse))
 
 ### Final Model Comparison
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 
 set.seed(1234)
 
