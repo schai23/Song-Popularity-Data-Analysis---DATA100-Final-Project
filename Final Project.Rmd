@@ -12,6 +12,14 @@ List your group members, including their student numbers, here:
 -   Dylan Plut (169083130)
 -   Seamus Chai ()
 
+# Introduction
+
+Every year, Spotify users receive a summary of their year in music, nicknamed "wrapped" as it comes out before Christmas. As any artist, it can be said that appearing on Spotify users wrapped summaries is a very respectable achievement, and since many users post their wrapped data on social media, it is also good for artist growth. Furthermore, artists partner with Spotify to make videos for their top listeners (people with the most minutes streamed). For artists that did not make users wrapped's this year, they will likely be wondering what it was about their songs, if anything, that prevented them from being relevant.
+
+# Goals
+
+The goal of this analysis will be to compare key metrics for
+
 # Libraries
 
 ```{r}
