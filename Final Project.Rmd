@@ -10,7 +10,7 @@ List your group members, including their student numbers, here:
 -   Justin Lee (169085217)
 -   Raiyan Junaid (169099497)
 -   Dylan Plut (169083130)
--   Seamus Chai ()
+-   Seamus Chai (169091540)
 
 # Introduction
 
@@ -258,15 +258,11 @@ plot_bar
 
 ```
 
-<<<<<<< HEAD
-### Exploratory Linear Models
-=======
 The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
 
 The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
 
 For whoever is writing insights (From Raiyan):
->>>>>>> 20aa527b3901414fe150033fde9681144a88c824
 
 ```{r}
 set.seed(1234)
@@ -327,6 +323,7 @@ print(paste("RMSE:", rmse))
 ```
 
 ### Final Model Comparison
+
 ```{r}
 set.seed(1234)
 
@@ -370,12 +367,12 @@ predictions_df <- data.frame(
 predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "Model", values_to = "Predicted")
 
 ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
-    geom_jitter(alpha = 0.5) +
+    geom_point(alpha = 0.5) +
     geom_smooth() +
     facet_wrap(~ Model) +
-    labs(title = "Actual vs Predicted Popularity Score",
-         x = "Actual Popularity Score",
-         y = "Predicted Popularity Score") +
+    labs(title = "Actual vs Predicted Artist Count",
+         x = "Actual Artist Count",
+         y = "Predicted Artist Count") +
     theme_minimal()
 ```
 
