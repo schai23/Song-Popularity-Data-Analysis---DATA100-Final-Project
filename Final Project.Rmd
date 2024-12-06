@@ -431,9 +431,6 @@ model_data <- cbind(model_data, artist_count = training(complete_set_split)$arti
 scaled_data <- as.data.frame(scale(model_data))
 colnames(scaled_data) <- make.names(colnames(scaled_data))
 
-# Check column names
-print(colnames(scaled_data))
-
 # Define formula based on actual column names
 formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
 
@@ -445,20 +442,17 @@ mlp_model <- neuralnet(formula,
 mlp_predictions <- predict(mlp_model, newdata = scaled_data)
 mlp_rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
 
+# Define and fit the linear model using the same formula
+lm_model <- lm(formula, data = scaled_data)
 
-
-
-
-
-
-
-lm_predictions <- predict(lm_fit, new_data = scaled_data)
-lm_rmse <- sqrt(mean((lm_predictions$.pred - scaled_data$artist_count)^2))
+# Make predictions with the linear model
+lm_predictions <- predict(lm_model, newdata = scaled_data)
+lm_rmse <- sqrt(mean((lm_predictions - scaled_data$artist_count)^2)) # Note: No need for $.pred here
 
 # Compare RMSE
 rmse_comparison <- data.frame(
-    Model = c("MLP", "RF", "LM"),
-    RMSE = c(mlp_rmse, rf_rmse, lm_rmse)
+    Model = c("MLP", "LM"), # Removed RF as it was not defined here
+    RMSE = c(mlp_rmse, lm_rmse)
 )
 
 print(rmse_comparison)
@@ -467,11 +461,10 @@ print(rmse_comparison)
 predictions_df <- data.frame(
     Actual = scaled_data$artist_count,
     MLP = as.vector(mlp_predictions),
-    RF = rf_predictions$.pred,
-    LM = lm_predictions$.pred
+    LM = lm_predictions # Removed RF as it was not defined here
 )
 
-predictions_long <- pivot_longer(predictions_df, cols = c(MLP, RF, LM), names_to = "Model", values_to = "Predicted")
+predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "Model", values_to = "Predicted")
 
 ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_point(alpha = 0.5) +
@@ -481,70 +474,6 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
          x = "Actual Artist Count",
          y = "Predicted Artist Count") +
     theme_minimal()
-
-```
-
-```{r}
-set.seed(1234)
-
-# Prepare data
-model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
-model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
-scaled_data <- as.data.frame(scale(model_data))
-colnames(scaled_data) <- make.names(colnames(scaled_data))
-
-# Define formula based on actual column names
-formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
-
-# Define MLP model specification
-mlp_model_spec <- mlp(hidden_units = c(5, 3)) %>%
-    set_engine("nnet") %>%
-    set_mode("regression")
-
-# Define linear regression model specification
-lm_model_spec <- linear_reg() %>%
-    set_engine("lm")
-
-# Create recipe for preprocessing
-recipe_artist_pop <- recipe(formula, data = scaled_data)
-
-# Split the data
-train_test <- initial_split(scaled_data, prop = 0.8)
-
-# Create workflow set with both models
-lm_versus_mlp <- workflow_set(
-    preproc = list(recipe = recipe_artist_pop), 
-    models = list(lm = lm_model_spec, mlp = mlp_model_spec)
-) |>
-    workflow_map(
-        fn = "tune_grid",
-        grid = tune_grid,
-        seed = 1234,
-        control = control_grid(save_pred = TRUE, save_workflow = TRUE),
-        resamples = vfold_cv(training(train_test), v = 5) 
-    )
-
-# Plot results
-lm_versus_mlp |>
-    autoplot(select_best = TRUE, metric = "rmse") +
-    geom_label_repel(aes(label = wflow_id))
-
-# Extract best workflows
-best_lm <- lm_versus_mlp |>
-  extract_workflow("recipe_lm") |>
-  finalize_workflow(
-    lm_versus_mlp |>
-      extract_workflow_set_result("recipe_lm") |>
-      select_best(metric = "rmse")
-  )
-
-best_mlp <- lm_versus_mlp |>
-  extract_workflow("recipe_mlp") |>
-  finalize_workflow(
-    lm_versus_mlp |>
-      extract_workflow_set_result("recipe_mlp") |>
-      select_best(metric
-(~ .metric, scales = "free_y")
 ```
 
 # Limitations
