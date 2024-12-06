@@ -272,7 +272,7 @@ art_test <- ggplot(baked_data, aes(x = artist_count, y = pop_scale, color = Deca
 art_test 
 ```
 
-### Exploratory Linear Model 1 - Linear Model
+### Exploratory Model 1 - Linear Model
 
 ```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
 set.seed(1234)
@@ -307,7 +307,7 @@ artists_vs_popularity <- model_aug |>
 artists_vs_popularity
 ```
 
-### Exploratory Linear Model 2 - Neural Net/MLP
+### Exploratory Model 2 - Neural Net/MLP
 
 ```{r, out.width='65%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
