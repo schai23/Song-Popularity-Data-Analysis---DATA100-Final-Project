@@ -235,7 +235,7 @@ artists_vs_popularity
 
 ### Exploratory Linear Model 2 - Neural Net/MLP
 
-```{r, results = 'hide', out.width='65%'}
+```{r, out.width='65%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
