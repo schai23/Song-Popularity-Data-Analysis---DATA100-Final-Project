@@ -455,8 +455,6 @@ rmse_comparison <- data.frame(
     RMSE = c(mlp_rmse, lm_rmse)
 )
 
-print(rmse_comparison)
-
 # Visualize predictions
 predictions_df <- data.frame(
     Actual = scaled_data$artist_count,
@@ -468,7 +466,7 @@ predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "
 
 ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_point(alpha = 0.5) +
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+    geom_smooth() +
     facet_wrap(~ Model) +
     labs(title = "Actual vs Predicted Artist Count",
          x = "Actual Artist Count",
