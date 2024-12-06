@@ -26,6 +26,11 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 library(tidyverse)
 library(tidymodels)
 library(devtools)
+library(ggrepel)
+#library(ggraph)
+#library(igraph)
+library(neuralnet)
+library(ranger)
 library(data.table)
 ```
 
@@ -151,7 +156,7 @@ model <- linear_reg() |>
   set_engine("lm")
 
 fit_artist_pop <- model |>
-  fit(artist_count ~ Popularity, data = training(complete_set_split))
+  fit(artist_count ~ pop_scale, data = training(complete_set_split))
 
 model_coef <- tidy(fit_artist_pop)
 model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
@@ -207,7 +212,7 @@ artists_vs_popularity <- model_aug |>
 artists_vs_popularity
 ```
 
-### Acousticness vs Tempo and Explicity
+### Exploratory Plots - Acousticness vs Tempo and Explicity
 
 ```{r}
 Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
@@ -236,29 +241,286 @@ plot_bar <- training(complete_set_split) |> ggplot() +
 plot_bar
 ```
 
-For whoever is writing insights (From Raiyan):
+### Exploratory Linear Models
 
--   Not enough data to accurately represent other regions
+```{r}
+set.seed(1234)
+valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
--   If you run without facet_wrap(\~Decade) 2010-2020 fully influences the entire graph. It is basically the whole graph because of the lack of any actual data points after splitting
+model <- linear_reg() |>
+  set_engine("lm")
 
--   If we want to pull real information from this graph, we need one of the following to happen:
+fit_artist_pop <- model |>
+  fit(artist_count ~ pop_scale, data = training(complete_set_split))
 
-    -   Far more information with popularity numbers for things in our dataset
+model_coef <- tidy(fit_artist_pop)
+model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
 
-    -   Me to only focus on 2010-2020 (which at that point isn't even recent so it may reduce credibility)
+recipe_artist_pop <- recipe(artist_count ~ Popularity + Decade, data = training(complete_set_split)) |>
+  step_dummy(all_nominal_predictors())
 
-    -   Write a massive paragraph about what happened and how "there was nothing we could do" (even though there is the other options I said above)
 
--   Only good option is to pull more information but without popularity values this becomes a little tough to try and argue (but if you think you can do it then go ahead)
+artists_vs_popularity <- model_aug |>
+  ggplot(aes(x = artist_count, y = .pred)) +
+  geom_point(aes(colour = Decade)) + 
+  facet_wrap(~Decade) +
+  #geom_abline(intercept = 1.6530366571, slope = 0.01) + <- HAS SOME PROMISE BUT IDK HOW TO USE EFFECTIVELY HERE
+  geom_smooth(aes(colour = Decade), method = "lm", se = FALSE) +
+  #geom_smooth(color = "black", method = "loess", se = FALSE) +
+  theme_minimal() +
+  labs(
+    x = "Artist Count",
+    y = "Predicted Popularity",
+    title = "How much does the number of artists affect popularity?",
+    subtitle = "Split by decade"
+  )
 
-Send in discord what we decide so everyone is on the same page.
+artists_vs_popularity
+```
 
-**UPDATES:**
+### Exploratory Linear Model 2 - Neural Net/MLP
 
--   I modified the join properties to allow more data to come through, I'm not sure how it changes the quality of it but now we only sort by id/artist, no longer name. This lets us get a little bit of new information out...but its like 4 entries sooooo
+```{r}
+model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
+model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
--   If we only sort by name/artist, I think its allowing duplicate entries (even though we isolated those earlier) so something funky might be happening. If we get desperate then we can use that though and that doubles our available data. Just a little bit dishonest since we are now intentionally skewing data
+scaled_data <- as.data.frame(scale(model_data))
+colnames(scaled_data) <- make.names(colnames(scaled_data))
+
+formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
+mlp_model <- neuralnet(formula, 
+                       data = scaled_data, 
+                       hidden = c(5, 3), 
+                       linear.output = TRUE)
+
+mlp_predictions <- predict(mlp_model, newdata = scaled_data)
+
+plot(mlp_model)
+
+rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
+print(paste("RMSE:", rmse))
+```
+
+### Final Model Comparison
+
+```{r}
+set.seed(1234)
+valid_set <- vfold_cv(training(complete_set_split), v = 5)
+
+model <- linear_reg() |>
+  set_engine("lm")
+
+fit_artist_pop <- model |>
+  fit(artist_count ~ pop_scale, data = training(complete_set_split))
+
+model_coef <- tidy(fit_artist_pop)
+model_aug <- augment(fit_artist_pop, new_data = training(complete_set_split))
+
+recipe_artist_pop <- recipe(artist_count ~ Popularity + Decade, data = training(complete_set_split)) |>
+  step_dummy(all_nominal_predictors())
+
+art_pop_workflow_set <- workflow_set(
+  preproc = list(recipe_artist_pop),
+  models = list(lm = model)
+)
+
+train_test <- initial_split(complete_set, prop = 0.8)
+
+lm_versus_rf <- workflow_set(
+    preproc = list(recipe = recipe_artist_pop), 
+    models = list(lm = lm_model, rf = rf)
+) |>
+    workflow_map(
+        fn = "tune_grid",
+        grid = tune_grid,
+        seed = 1234,
+        control = control_grid(save_pred = TRUE, save_workflow = TRUE),
+        resamples = vfold_cv(training(train_test), v = 5) 
+    )
+
+lm_versus_rf |>
+    autoplot(select_best = TRUE, metric = "rmse") +
+    geom_label_repel(aes(label = wflow_id))
+
+
+best_lm <- lm_versus_rf |>
+  extract_workflow("recipe_lm") |>
+  finalize_workflow(
+    lm_versus_rf |>
+      extract_workflow_set_result("recipe_lm") |>
+      select_best(metric = "rmse")
+  )
+
+best_rf <- lm_versus_rf |>
+  extract_workflow("recipe_rf") |>
+  finalize_workflow(
+    lm_versus_rf |>
+      extract_workflow_set_result("recipe_rf") |>
+      select_best(metric = "rmse")
+  )
+
+
+# Copied from Assignment 4
+test_lm <- last_fit(best_lm, split = complete_set_split)
+test_rf <- last_fit(best_rf, split = complete_set_split)
+
+cat("\nBest RMSE and R^2:\n")
+bind_rows(
+    lm = collect_metrics(test_lm),
+    rf = collect_metrics(test_rf),
+    .id = "model"
+)
+
+cat("\nPredictors used:\n")
+extract_recipe(test_lm) |> formula()
+extract_recipe(test_rf) |> formula()
+
+bind_rows(
+    lm = collect_predictions(test_lm),
+    rf = collect_predictions(test_rf),
+    .id = "model"
+) |>
+    ggplot() +
+    aes(x = artist_count, y = .pred, colour = model) +
+    geom_point(shape = 1)
+
+bind_rows(
+    lm = test_lm,
+    rf = test_rf,
+    .id = "model"
+) |>
+    unnest_wider(.metrics) |>
+    unnest_longer(c(.metric, .estimator, .estimate, .config)) |>
+    ggplot() +
+    aes(x = model, y = .estimate) +
+    geom_col(fill = "lightgrey", color = 1) +
+    facet_wrap(~ .metric, scales = "free_y")
+```
+
+```{r}
+set.seed(1234)
+
+# Prepare data
+model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
+model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
+scaled_data <- as.data.frame(scale(model_data))
+colnames(scaled_data) <- make.names(colnames(scaled_data))
+
+# Check column names
+print(colnames(scaled_data))
+
+# Define formula based on actual column names
+formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
+
+# MLP model
+mlp_model <- neuralnet(formula, 
+                       data = scaled_data, 
+                       hidden = c(5, 3), 
+                       linear.output = TRUE)
+mlp_predictions <- predict(mlp_model, newdata = scaled_data)
+mlp_rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
+
+
+
+
+
+
+
+
+lm_predictions <- predict(lm_fit, new_data = scaled_data)
+lm_rmse <- sqrt(mean((lm_predictions$.pred - scaled_data$artist_count)^2))
+
+# Compare RMSE
+rmse_comparison <- data.frame(
+    Model = c("MLP", "RF", "LM"),
+    RMSE = c(mlp_rmse, rf_rmse, lm_rmse)
+)
+
+print(rmse_comparison)
+
+# Visualize predictions
+predictions_df <- data.frame(
+    Actual = scaled_data$artist_count,
+    MLP = as.vector(mlp_predictions),
+    RF = rf_predictions$.pred,
+    LM = lm_predictions$.pred
+)
+
+predictions_long <- pivot_longer(predictions_df, cols = c(MLP, RF, LM), names_to = "Model", values_to = "Predicted")
+
+ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
+    geom_point(alpha = 0.5) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+    facet_wrap(~ Model) +
+    labs(title = "Actual vs Predicted Artist Count",
+         x = "Actual Artist Count",
+         y = "Predicted Artist Count") +
+    theme_minimal()
+
+```
+
+```{r}
+set.seed(1234)
+
+# Prepare data
+model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
+model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
+scaled_data <- as.data.frame(scale(model_data))
+colnames(scaled_data) <- make.names(colnames(scaled_data))
+
+# Define formula based on actual column names
+formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
+
+# Define MLP model specification
+mlp_model_spec <- mlp(hidden_units = c(5, 3)) %>%
+    set_engine("nnet") %>%
+    set_mode("regression")
+
+# Define linear regression model specification
+lm_model_spec <- linear_reg() %>%
+    set_engine("lm")
+
+# Create recipe for preprocessing
+recipe_artist_pop <- recipe(formula, data = scaled_data)
+
+# Split the data
+train_test <- initial_split(scaled_data, prop = 0.8)
+
+# Create workflow set with both models
+lm_versus_mlp <- workflow_set(
+    preproc = list(recipe = recipe_artist_pop), 
+    models = list(lm = lm_model_spec, mlp = mlp_model_spec)
+) |>
+    workflow_map(
+        fn = "tune_grid",
+        grid = tune_grid,
+        seed = 1234,
+        control = control_grid(save_pred = TRUE, save_workflow = TRUE),
+        resamples = vfold_cv(training(train_test), v = 5) 
+    )
+
+# Plot results
+lm_versus_mlp |>
+    autoplot(select_best = TRUE, metric = "rmse") +
+    geom_label_repel(aes(label = wflow_id))
+
+# Extract best workflows
+best_lm <- lm_versus_mlp |>
+  extract_workflow("recipe_lm") |>
+  finalize_workflow(
+    lm_versus_mlp |>
+      extract_workflow_set_result("recipe_lm") |>
+      select_best(metric = "rmse")
+  )
+
+best_mlp <- lm_versus_mlp |>
+  extract_workflow("recipe_mlp") |>
+  finalize_workflow(
+    lm_versus_mlp |>
+      extract_workflow_set_result("recipe_mlp") |>
+      select_best(metric
+(~ .metric, scales = "free_y")
+```
 
 # Limitations
 
