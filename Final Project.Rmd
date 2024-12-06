@@ -370,12 +370,12 @@ predictions_df <- data.frame(
 predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "Model", values_to = "Predicted")
 
 ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
-    geom_point(alpha = 0.5) +
+    geom_jitter(alpha = 0.5) +
     geom_smooth() +
     facet_wrap(~ Model) +
-    labs(title = "Actual vs Predicted Artist Count",
-         x = "Actual Artist Count",
-         y = "Predicted Artist Count") +
+    labs(title = "Actual vs Predicted Popularity Score",
+         x = "Actual Popularity Score",
+         y = "Predicted Popularity Score") +
     theme_minimal()
 ```
 
