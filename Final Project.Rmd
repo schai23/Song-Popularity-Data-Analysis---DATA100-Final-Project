@@ -259,3 +259,7 @@ Send in discord what we decide so everyone is on the same page.
 -   I modified the join properties to allow more data to come through, I'm not sure how it changes the quality of it but now we only sort by id/artist, no longer name. This lets us get a little bit of new information out...but its like 4 entries sooooo
 
 -   If we only sort by name/artist, I think its allowing duplicate entries (even though we isolated those earlier) so something funky might be happening. If we get desperate then we can use that though and that doubles our available data. Just a little bit dishonest since we are now intentionally skewing data
+
+# Limitations
+
+Throughout this project, we faced a very large number of technical challenges, which
