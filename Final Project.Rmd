@@ -223,25 +223,50 @@ Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticnes
 Acous_vs_temp_plot
 ```
 
-```{r}
-view(training(complete_set_split))
-complete_set_split
-```
+The graph above showcases how different song compositions tend to have a more general pattern, as shown by the graph when the song is not explicit there is an inverse correlation between the acousticness and the tempo of the song. This differs from the graph of the songs which are explicit as the slope is almost flat with there being close to no correlation. With this we can imply the composition of a song based on the factors of tempo and the explicitness. It is important to note that with these conclusions they can be biased based on the small sample size. (see limitations)
 
 ```{r}
-plot_year_histogram <- training(complete_set_split) |> ggplot(aes(x = year)) + geom_histogram()
+plot_year_histogram <- training(complete_set_split) |> 
+  ggplot(aes(x = year, fill = after_stat(count))) + 
+  geom_histogram( color = "black") +
+  scale_fill_viridis_c() +
+  labs(title = "Distribution of Years",
+       x = "Year",
+       y = "Count",
+       fill = "Frequency") +
+  theme_minimal()
 
 plot_year_histogram
 ```
 
+The graph shown above demonstrates one of the measure we took to circumvent the downfalls of our data. This problem we had to solve was that the popularity value found on the Spotify api is more a score of relevancy with parts of its calculations being based on recent listens, this posed difficulty with songs as an older mor popular song would have a lower popularity score. To circumvent this issue we decided to pull the majority of data based in recent years as shown by the graph. This also caused some issue but that is also found in the limitations.
+
+With this information something that we would like to improve on the future of the project is to increase the quantity of data collected and potentially to find a better variable to judge popularity by such as total Listeners or albums sales of older songs.
+
 ```{r}
-plot_bar <- training(complete_set_split) |> ggplot() + 
-  geom_bar(aes(x=key, y= Popularity), stat="identity")
+plot_bar <- training(complete_set_split) |> 
+  ggplot(aes(x = Decade, group = key, fill = key)) + 
+  geom_bar(position = "dodge") +
+  labs(title = "Song Count by Decade and Musical Key",
+       x = "Decade",
+       y = "Count",
+       fill = "Musical Key") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 plot_bar
+
 ```
 
+<<<<<<< HEAD
 ### Exploratory Linear Models
+=======
+The bar graph above showcases how the musical key of our data changes throughout the decades, this could suggest changes in the differences of the musical taste. This data may suggest that but the main difficulty with this interpretation is the affect of the small sample size therefore any conclusions must be taken with a grain of salt.
+
+The future possibility of this study could further dive into the impacts of society of music with certain keys potentially being more popular in certain decades.
+
+For whoever is writing insights (From Raiyan):
+>>>>>>> 20aa527b3901414fe150033fde9681144a88c824
 
 ```{r}
 set.seed(1234)
@@ -524,4 +549,8 @@ best_mlp <- lm_versus_mlp |>
 
 # Limitations
 
-Throughout this project, we faced a very large number of technical challenges, which
+Throughout this project, we faced a very large number of technical challenges, which severely limited our analysis. All of these limitations came from the Spotify API. Using the Spotify API was not necessarily hard. We used a library (spotipy) to allow for the use of the python programming language, and made calls to the api for various data. However, the actual data itself proved to a large challenge. The first issue we faced was that during the development of the "dancibility" script which pulled this metric from each artists top 100 songs, Spotify actually removed the endpoint from their API. This meant that we could no longer pull this data. Simultaneously, all other "audio feature" endpoints were pulled. This was a huge blow to our progress in the analysis, but luckily we found a creative workaround: the Spotify IOS api had not yet been updated to reflect the change in functionality. So by manually adding songs into a playlist on our Spotify accounts, we were able to use the IOS api to pull all of the audio features. The result of this was about 2,000 songs and their data being pulled, which is being used in this analysis now.
+
+The second major issues that we faced was the "popularity" metric. This metric is based on current relevance, which meant songs from older artists such as The Beatles would be predestined to do worse in the metric based on their older release date. It seems obvious that instead of using the popularity metric the "total streams" metric should be used, except that Spotify does not allow that data to be pulled. The lack of a total song streams metric dealt a serious blow to this analysis, and while there are creative workarounds (such as scraping the online web player for each artist) they are both too time consuming and beyond the current scope of our ability for this project.
+
+It is also important to recognize that due to our workaround, songs were being handpicked. While we tried to be as diverse as possible with our picks, there is obviously a degree of bias to our representative sample of Spotify data. Also, handpicking data meant that we could only collect so much, and the lack of data explains the instability/inaccuracy of the models.
