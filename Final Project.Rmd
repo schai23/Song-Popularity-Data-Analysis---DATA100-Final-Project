@@ -366,7 +366,7 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
 
 # Conclusion
 
-In the model comparison of artist count and predicted popularity, we can see that the optimal amount of artists in a song is 1. Anything beyond that brings down your recent popularity as it appears that individuals are looking for songs from their favorite artist and not collaborations with other artists. A possibility for this significant of an fluctuation is because of the amount of songs in our data that has one artist on them, which may have skewed the data. We can also observe that the RMSE and model comparison is significantly more accurate with the Multilayer Perceptron (MLP) model.
+In the model comparison of artist count and predicted popularity, we can see that the optimal amount of artists in a song is about one to one and a half. Anything below that brings down your recent popularity as it appears that individuals are looking for songs from their favourite artists and collaborations with other popular artists. A possibility for this significant of an fluctuation is because of the amount of songs in our data that has one artist on them, which may have skewed the data. We can also observe that the RMSE and model comparison is significantly more accurate with the Multilayer Perceptron (MLP) model due to the RMSE Differential.
 
 # Limitations
 
