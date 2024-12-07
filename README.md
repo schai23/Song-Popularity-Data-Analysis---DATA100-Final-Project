@@ -13,7 +13,7 @@ One of our csv files were too large to post on GitHub and LFS did not want to wo
 ------------------------------------------------------------------------
 
 The repo for the Python scripts that were used to pull data can be found here: 
-https://github.com/Dylan-Plut/SpotifyAPIData/tree/main/CSV_Files 
+[Spotify API Scripts](https://github.com/Dylan-Plut/SpotifyAPIData/tree/main)
 
 -------------------------------------------------------------------------
 
