@@ -313,6 +313,8 @@ scaled_data <- as.data.frame(scale(model_data))
 colnames(scaled_data) <- make.names(colnames(scaled_data))
 
 scaled_data$artist_count = scaled_data$artist_count + 1
+sum(is.na(scaled_data))
+sum(!is.finite(unlist(scaled_data)))
 all(all.vars(formula[[3]]) %in% colnames(scaled_data))
 
 # Define formula based on actual column names
