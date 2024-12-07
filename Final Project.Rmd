@@ -355,7 +355,7 @@ predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "
 ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_point(alpha = 0.5) +
     geom_smooth() +
-    facet_wrap(~ Model) +
+    #facet_wrap(~ Model) +
     labs(title = "Artist Count vs Predicted Popularity",
          #subtitle = "Lower Variance means more precise",
          x = "Artist Count",
