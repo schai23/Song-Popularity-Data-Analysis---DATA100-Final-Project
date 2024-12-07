@@ -15,7 +15,7 @@ The goal of this analysis will be to compare key metrics for Spotify's songs via
 
 # Libraries
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 library(tidyverse)
 library(tidymodels)
 library(devtools)
@@ -25,7 +25,7 @@ library(ranger)
 library(data.table)
 ```
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 folder_path <- "Raw Data Files"
 csv_files <- list.files(path = folder_path, pattern = "\\.csv$", full.names = TRUE)
 data_list <- lapply(csv_files, fread)
@@ -35,7 +35,7 @@ big_dataset <- read_csv("tracks_features.csv")
 
 # Tidying Data
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 
 # Joining the datasets
 read_and_convert <- function(file) {
@@ -143,7 +143,7 @@ Overall, this process creates a structured and well-prepared dataset that is rea
 
 ### Exploratory Plot 1- Acousticness vs Tempo and Explicity
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 
 Acous_vs_temp_plot <- training(complete_set_split) |> ggplot(aes(y = acousticness, x = tempo)) +
   geom_point(aes(colour = time_signature)) +
@@ -185,7 +185,7 @@ The graph on the left is to show one of the measures we took when cleaning the d
 
 ### Model Plot 1 - Artist Count vs Popularity Line
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 model <- linear_reg() |>
   set_engine("lm")
 
@@ -217,7 +217,7 @@ artists_vs_popularity
 
 ### Model Plot 2 - Artist Count vs Popularity Factor
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 baked_data <- bake(prep(recipe_artist_pop), new_data = training(complete_set_split)) |>
   pivot_longer(
     cols = starts_with("Decade_X"),
@@ -244,7 +244,7 @@ art_test
 
 ### Exploratory Model 1 - Linear Model
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 set.seed(1234)
 valid_set <- vfold_cv(training(complete_set_split), v = 5)
 
@@ -279,7 +279,7 @@ artists_vs_popularity
 
 ### Exploratory Model 2 - Neural Net/MLP
 
-```{r, out.width='50%'}
+```{r, out.width='75%'}
 model_data <- model.matrix(~ Popularity + Decade - 1, data = training(complete_set_split))
 model_data <- cbind(model_data, artist_count = training(complete_set_split)$artist_count)
 
@@ -302,7 +302,7 @@ print(paste("RMSE:", rmse))
 
 ### Final Model Comparison
 
-```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='50%'}
+```{r, results = 'hide', message = FALSE, warning = FALSE, out.width='75%'}
 
 set.seed(1234)
 
@@ -312,14 +312,21 @@ model_data <- cbind(model_data, artist_count = testing(complete_set_split)$artis
 scaled_data <- as.data.frame(scale(model_data))
 colnames(scaled_data) <- make.names(colnames(scaled_data))
 
+scaled_data$artist_count = scaled_data$artist_count + 1
+#sum(is.na(scaled_data))
+#sum(!is.finite(unlist(scaled_data)))
+all(all.vars(formula[[3]]) %in% colnames(scaled_data))
+
 # Define formula based on actual column names
 formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
 
 # MLP model
 mlp_model <- neuralnet(formula, 
                        data = scaled_data, 
-                       hidden = c(5, 3), 
+                       hidden = c(3), 
                        linear.output = TRUE)
+#mlp_output <- compute(mlp_model, scaled_data)
+#mlp_predictions <- mlp_output$net.result
 mlp_predictions <- predict(mlp_model, newdata = scaled_data)
 mlp_rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
 
@@ -348,7 +355,7 @@ predictions_long <- pivot_longer(predictions_df, cols = c(MLP, LM), names_to = "
 ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_point(alpha = 0.5) +
     geom_smooth() +
-    facet_wrap(~ Model) +
+    #facet_wrap(~ Model) +
     labs(title = "Artist Count vs Predicted Popularity",
          #subtitle = "Lower Variance means more precise",
          x = "Artist Count",
