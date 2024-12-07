@@ -313,8 +313,8 @@ scaled_data <- as.data.frame(scale(model_data))
 colnames(scaled_data) <- make.names(colnames(scaled_data))
 
 scaled_data$artist_count = scaled_data$artist_count + 1
-sum(is.na(scaled_data))
-sum(!is.finite(unlist(scaled_data)))
+#sum(is.na(scaled_data))
+#sum(!is.finite(unlist(scaled_data)))
 all(all.vars(formula[[3]]) %in% colnames(scaled_data))
 
 # Define formula based on actual column names
@@ -325,9 +325,9 @@ mlp_model <- neuralnet(formula,
                        data = scaled_data, 
                        hidden = c(3), 
                        linear.output = TRUE)
-mlp_output <- compute(mlp_model, scaled_data)
-mlp_predictions <- mlp_output$net.result
-#mlp_predictions <- predict(mlp_model, newdata = scaled_data)
+#mlp_output <- compute(mlp_model, scaled_data)
+#mlp_predictions <- mlp_output$net.result
+mlp_predictions <- predict(mlp_model, newdata = scaled_data)
 mlp_rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
 
 # Define and fit the linear model using the same formula
