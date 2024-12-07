@@ -321,7 +321,8 @@ formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + D
 mlp_model <- neuralnet(formula, 
                        data = scaled_data, 
                        hidden = c(3), 
-                       linear.output = TRUE)
+                       linear.output = TRUE,
+                       rep = 5)
 mlp_output <- compute(mlp_model, scaled_data)
 mlp_predictions <- mlp_output$net.result
 #mlp_predictions <- predict(mlp_model, newdata = scaled_data)
@@ -340,6 +341,7 @@ rmse_comparison <- data.frame(
     Model = c("MLP", "LM"), 
     RMSE = c(mlp_rmse, lm_rmse)
 )
+rmse_diff <- rmse_comparison$RMSE[2] - rmse
 
 # Visualize predictions
 predictions_df <- data.frame(
@@ -355,7 +357,8 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_smooth() +
     #facet_wrap(~ Model) +
     labs(title = "Artist Count vs Predicted Popularity",
-         subtitle = "RMSE Comparison: {rmse_comparison}",
+         subtitle = paste("RMSE Differential:", rmse_diff),
+         caption = "(Positive = MLP is lower, Negative = LM is lower)",
          x = "Artist Count",
          y = "Predicted Popularity") +
     theme_minimal()
@@ -363,7 +366,7 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
 
 # Conclusion
 
-In this project, we aimed to predict the popularity of songs using Linear Regression and a Machine Learning model, the Multilayer Perceptron (MLP). One notable approach was creating a custom metric, similar to the one used by Spotify, to better capture the factors influencing track popularity. For the linear model, we found that from 2010–2020, songs with more artists tended to be more popular. However, since 2020, artist count shows little impact, possibly due to overused collaborations or the prominence of specific artists. The Multilayer Perceptron (MLP) model followed the data more closely, showing that tracks with no artists have no popularity, while a few artists boost popularity significantly. Beyond a certain number, popularity plateaus or declines. The project emphasized the value of appropriate features and models. While Linear Regression provided a baseline, the MLP offered greater accuracy, showcasing the potential of advanced modelling for predicting track popularity.
+In the model comparison of artist count and predicted popularity, we can see that the optimal amount of artists in a song is 1. Anything beyond that brings down your recent popularity as it appears that individuals are looking for songs from their favorite artist and not collaborations with other artists. A possibility for this significant of an fluctuation is because of the amount of songs in our data that has one artist on them, which may have skewed the data. We can also observe that the RMSE and model comparison is significantly more accurate with the Multilayer Perceptron (MLP) model.
 
 # Limitations
 
