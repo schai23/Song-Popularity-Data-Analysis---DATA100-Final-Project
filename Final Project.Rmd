@@ -313,9 +313,6 @@ scaled_data <- as.data.frame(scale(model_data))
 colnames(scaled_data) <- make.names(colnames(scaled_data))
 
 scaled_data$artist_count = scaled_data$artist_count + 1
-#sum(is.na(scaled_data))
-#sum(!is.finite(unlist(scaled_data)))
-all(all.vars(formula[[3]]) %in% colnames(scaled_data))
 
 # Define formula based on actual column names
 formula <- artist_count ~ Popularity + Decade1990...2000 + Decade2000...2010 + Decade2010...2020 + Decade2020.
@@ -325,10 +322,11 @@ mlp_model <- neuralnet(formula,
                        data = scaled_data, 
                        hidden = c(3), 
                        linear.output = TRUE)
-#mlp_output <- compute(mlp_model, scaled_data)
-#mlp_predictions <- mlp_output$net.result
-mlp_predictions <- predict(mlp_model, newdata = scaled_data)
+mlp_output <- compute(mlp_model, scaled_data)
+mlp_predictions <- mlp_output$net.result
+#mlp_predictions <- predict(mlp_model, newdata = scaled_data)
 mlp_rmse <- sqrt(mean((mlp_predictions - scaled_data$artist_count)^2))
+
 
 # Define and fit the linear model using the same formula
 lm_model <- lm(formula, data = scaled_data)
@@ -357,7 +355,7 @@ ggplot(predictions_long, aes(x = Actual, y = Predicted, color = Model)) +
     geom_smooth() +
     #facet_wrap(~ Model) +
     labs(title = "Artist Count vs Predicted Popularity",
-         #subtitle = "Lower Variance means more precise",
+         subtitle = "RMSE Comparison: {rmse_comparison}",
          x = "Artist Count",
          y = "Predicted Popularity") +
     theme_minimal()
