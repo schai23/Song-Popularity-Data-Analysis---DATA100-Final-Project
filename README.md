@@ -1,6 +1,6 @@
 # DATA100 Final Project
 
-(Had an issue connecting R Studio and Git, project was worked on and sent to group members from my end)
+([Seamus: Had an issue connecting R Studio and Git, project was worked on and sent to group members from my end)
 
 Raiyan Junaid, Justin Lee, Dylan Plut, Seamus Chai
 
